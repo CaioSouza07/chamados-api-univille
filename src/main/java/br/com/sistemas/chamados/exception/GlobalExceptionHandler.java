@@ -1,5 +1,6 @@
 package br.com.sistemas.chamados.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -28,6 +29,16 @@ public class GlobalExceptionHandler {
                 .map(error-> error.getField() + ": " + error.getDefaultMessage())
                 .toList();
         return montar(HttpStatus.BAD_REQUEST, "Dados inválidos", detalhes);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErroResposta> erroDeletarBanco(ConstraintViolationException e) {
+        return montar(HttpStatus.CONFLICT, "Esse dado possuí relação com dado em outra tabela no banco, não é possível deletar" , List.of());
+    }
+
+    @ExceptionHandler(ChamadoFechadoException.class)
+    public ResponseEntity<ErroResposta> chamadoFechado(ChamadoFechadoException e) {
+        return montar(HttpStatus.BAD_REQUEST, e.getMessage(), List.of());
     }
 
     private ResponseEntity<ErroResposta> montar(HttpStatus status, String erro, List<String> detalhes) {
