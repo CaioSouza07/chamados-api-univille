@@ -1,5 +1,6 @@
 package br.com.sistemas.chamados.service;
 
+import br.com.sistemas.chamados.dto.ChamadoResponse;
 import br.com.sistemas.chamados.dto.ClienteRequest;
 import br.com.sistemas.chamados.dto.ClienteResponse;
 import br.com.sistemas.chamados.entity.Cliente;
@@ -57,7 +58,7 @@ public class ClienteService {
         clienteRepository.delete(buscarEntity(id));
     }
 
-    private Cliente buscarEntity(Long id) {
+    public Cliente buscarEntity(Long id) {
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente " + id + " não encontrado"));
     }
