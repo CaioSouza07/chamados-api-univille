@@ -52,7 +52,7 @@ public class CategoriaService {
         categoriaRepository.delete(buscarEntity(id));
     }
 
-    private Categoria buscarEntity(Long id) {
+    public Categoria buscarEntity(Long id) {
         return categoriaRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria " + id + " não encontrado"));
     }
