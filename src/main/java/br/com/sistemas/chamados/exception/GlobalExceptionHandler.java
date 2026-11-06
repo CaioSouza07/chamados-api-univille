@@ -1,6 +1,6 @@
 package br.com.sistemas.chamados.exception;
 
-import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -31,9 +31,9 @@ public class GlobalExceptionHandler {
         return montar(HttpStatus.BAD_REQUEST, "Dados inválidos", detalhes);
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ErroResposta> erroDeletarBanco(ConstraintViolationException e) {
-        return montar(HttpStatus.CONFLICT, "Esse dado possuí relação com dado em outra tabela no banco, não é possível deletar" , List.of());
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErroResposta> erroDeletarBanco(DataIntegrityViolationException e) {
+        return montar(HttpStatus.CONFLICT, "Esse dado possui relação com dado em outra tabela no banco, não é possível deletar", List.of());
     }
 
     @ExceptionHandler(ChamadoFechadoException.class)

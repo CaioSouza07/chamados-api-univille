@@ -1,6 +1,7 @@
 package br.com.sistemas.chamados.controller;
 
 import br.com.sistemas.chamados.dto.ChamadoAtribuirRequest;
+import br.com.sistemas.chamados.dto.ChamadoDetalheResponse;
 import br.com.sistemas.chamados.dto.ChamadoRequest;
 import br.com.sistemas.chamados.dto.ChamadoResponse;
 import br.com.sistemas.chamados.dto.ChamadoStatusRequest;
@@ -45,16 +46,16 @@ public class ChamadoController {
     @GetMapping
     public Page<ChamadoResponse> listar(
             @PageableDefault(size = 20, sort = {"dataAbertura"}) Pageable paginacao,
-            @RequestParam StatusChamado status,
-            @RequestParam Prioridade prioridade,
-            @RequestParam Long clientId
+            @RequestParam(required = false) StatusChamado status,
+            @RequestParam(required = false) Prioridade prioridade,
+            @RequestParam(required = false) Long clienteId
             ) {
-        return chamadoService.listar(paginacao, status, prioridade, clientId);
+        return chamadoService.listar(paginacao, status, prioridade, clienteId);
     }
 
 
     @GetMapping("/{id}")
-    public ChamadoResponse buscar(@PathVariable Long id) {
+    public ChamadoDetalheResponse buscar(@PathVariable Long id) {
         return chamadoService.buscar(id);
     }
 
