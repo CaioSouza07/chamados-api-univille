@@ -20,6 +20,7 @@ public record ChamadoResponse(
         CategoriaResponse categoria
 ) {
     public static ChamadoResponse de(Chamado chamado) {
-        return new ChamadoResponse(chamado.getId(), chamado.getTitulo(), chamado.getDescricao(), chamado.getDataAbertura(), chamado.getDataFechamento(), chamado.getPrioridade(), chamado.getStatus(), ClienteResponse.de(chamado.getCliente()), TecnicoResponse.de(chamado.getTecnico()), CategoriaResponse.de(chamado.getCategoria()));
+        TecnicoResponse tecnico = chamado.getTecnico() != null ? TecnicoResponse.de(chamado.getTecnico()) : null;
+        return new ChamadoResponse(chamado.getId(), chamado.getTitulo(), chamado.getDescricao(), chamado.getDataAbertura(), chamado.getDataFechamento(), chamado.getPrioridade(), chamado.getStatus(), ClienteResponse.de(chamado.getCliente()), tecnico, CategoriaResponse.de(chamado.getCategoria()));
     }
 }

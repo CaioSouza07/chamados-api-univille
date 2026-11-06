@@ -11,9 +11,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.persistence.CascadeType;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Table(name = "chamados")
@@ -54,6 +60,17 @@ public class Chamado {
     @ManyToOne
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
+
+    @OneToMany(mappedBy = "chamado", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("dataCriacao ASC")
+    private List<Comentario> comentarios = new ArrayList<>();
+
+    @OneToMany(mappedBy = "chamado", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("dataAlteracao ASC")
+    private List<HistoricoStatus> historicoStatus = new ArrayList<>();
+
+    public Chamado() {
+    }
 
     public Chamado(String titulo, String descricao, Prioridade prioridade, Cliente cliente, Categoria categoria) {
         this.titulo = titulo;
@@ -137,5 +154,21 @@ public class Chamado {
 
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
+    }
+
+    public List<Comentario> getComentarios() {
+        return Collections.unmodifiableList(comentarios);
+    }
+
+    public void adicionarComentario(Comentario comentario) {
+        this.comentarios.add(comentario);
+    }
+
+    public List<HistoricoStatus> getHistoricoStatus() {
+        return Collections.unmodifiableList(historicoStatus);
+    }
+
+    public void adicionarHistoricoStatus(HistoricoStatus historico) {
+        this.historicoStatus.add(historico);
     }
 }

@@ -1,17 +1,20 @@
 package br.com.sistemas.chamados.service;
 
 import br.com.sistemas.chamados.dto.ChamadoAtribuirRequest;
+import br.com.sistemas.chamados.dto.ChamadoDetalheResponse;
 import br.com.sistemas.chamados.dto.ChamadoRequest;
 import br.com.sistemas.chamados.dto.ChamadoResponse;
 import br.com.sistemas.chamados.dto.ChamadoStatusRequest;
 import br.com.sistemas.chamados.entity.Categoria;
 import br.com.sistemas.chamados.entity.Chamado;
 import br.com.sistemas.chamados.entity.Cliente;
+import br.com.sistemas.chamados.entity.HistoricoStatus;
 import br.com.sistemas.chamados.enums.Prioridade;
 import br.com.sistemas.chamados.enums.StatusChamado;
 import br.com.sistemas.chamados.exception.ChamadoFechadoException;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
 import br.com.sistemas.chamados.repository.ChamadoRepository;
+import br.com.sistemas.chamados.repository.HistoricoStatusRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,12 +29,14 @@ public class ChamadoService {
     private final ClienteService clienteService;
     private final TecnicoService tecnicoService;
     private final CategoriaService categoriaService;
+    private final HistoricoStatusRepository historicoStatusRepository;
 
-    public ChamadoService(ChamadoRepository chamadoRepository, ClienteService clienteService, TecnicoService tecnicoService, CategoriaService categoriaService) {
+    public ChamadoService(ChamadoRepository chamadoRepository, ClienteService clienteService, TecnicoService tecnicoService, CategoriaService categoriaService, HistoricoStatusRepository historicoStatusRepository) {
         this.chamadoRepository = chamadoRepository;
         this.clienteService = clienteService;
         this.tecnicoService = tecnicoService;
         this.categoriaService = categoriaService;
+        this.historicoStatusRepository = historicoStatusRepository;
     }
 
     @Transactional
@@ -39,18 +44,21 @@ public class ChamadoService {
         Cliente cliente = clienteService.buscarEntity(dto.clienteId());
         Categoria categoria = categoriaService.buscarEntity(dto.categoriaId());
         Chamado salvo = chamadoRepository.save(new Chamado(dto.titulo(), dto.descricao(), dto.prioridade(), cliente, categoria));
+        registrarHistorico(salvo, null, salvo.getStatus());
         return ChamadoResponse.de(salvo);
     }
 
     @Transactional(readOnly = true)
-    public Page<ChamadoResponse> listar(Pageable paginacao, StatusChamado status, Prioridade prioridade, Long clientId) {
-        Cliente cliente = clienteService.buscarEntity(clientId);
-        return chamadoRepository.findAllOptionalByStatusAndPrioridadeAndClienteId(status, prioridade, cliente, paginacao).map(ChamadoResponse::de);
+    public Page<ChamadoResponse> listar(Pageable paginacao, StatusChamado status, Prioridade prioridade, Long clienteId) {
+        if (clienteId != null) {
+            clienteService.buscarEntity(clienteId);
+        }
+        return chamadoRepository.findAllOptionalByStatusAndPrioridadeAndClienteId(status, prioridade, clienteId, paginacao).map(ChamadoResponse::de);
     }
 
     @Transactional(readOnly = true)
-    public ChamadoResponse buscar(Long id) {
-        return ChamadoResponse.de(buscarEntity(id));
+    public ChamadoDetalheResponse buscar(Long id) {
+        return ChamadoDetalheResponse.de(buscarEntity(id));
     }
 
     @Transactional
@@ -81,14 +89,24 @@ public class ChamadoService {
     @Transactional
     public ChamadoResponse alterarStatus(Long id, ChamadoStatusRequest dto) {
         Chamado chamado = buscarEntity(id);
+        StatusChamado statusAnterior = chamado.getStatus();
 
-        if (dto.status() == StatusChamado.FECHADO && chamado.getStatus() != StatusChamado.FECHADO) {
+        if (dto.status() == StatusChamado.FECHADO && statusAnterior != StatusChamado.FECHADO) {
             chamado.setDataFechamento(LocalDate.now());
-        } else if (chamado.getStatus() == StatusChamado.FECHADO && dto.status() != StatusChamado.FECHADO) {
+        } else if (statusAnterior == StatusChamado.FECHADO && dto.status() != StatusChamado.FECHADO) {
             chamado.setDataFechamento(null);
         }
         chamado.setStatus(dto.status());
+
+        if (statusAnterior != dto.status()) {
+            registrarHistorico(chamado, statusAnterior, dto.status());
+        }
         return ChamadoResponse.de(chamado);
+    }
+
+    private void registrarHistorico(Chamado chamado, StatusChamado statusAnterior, StatusChamado statusNovo) {
+        HistoricoStatus historico = historicoStatusRepository.save(new HistoricoStatus(statusAnterior, statusNovo, chamado));
+        chamado.adicionarHistoricoStatus(historico);
     }
 
     @Transactional
