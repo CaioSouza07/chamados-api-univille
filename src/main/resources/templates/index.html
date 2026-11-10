@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Início · Sistema de Chamados</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}">
+  <script>
+    // Define o estado do menu antes da primeira renderização (evita "piscar").
+    // Desktop: lembra a última escolha. Celular: sempre começa fechado.
+    (function () {
+      var mobile = window.matchMedia('(max-width: 860px)').matches;
+      var saved = null;
+      try { saved = localStorage.getItem('sidebar'); } catch (e) {}
+      if (mobile || saved === 'closed') document.documentElement.classList.add('sidebar-collapsed');
+    })();
+  </script>
+</head>
+<body>
+
+<!-- Ícones reutilizáveis -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v12" stroke-dasharray="2 3"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3.2-5.5 6.5-5.5s6 2 6.5 5.5"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6"/><path d="M18 14.8c2 .7 3.2 2.4 3.5 5.2"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0 5 5L21 12.6 12.6 21a2.1 2.1 0 0 1-3-3L18 9.6"/><path d="M14.7 6.3L11 10"/><path d="M13 3.5l2.5 2.5"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="8" cy="8" r="1.2"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-search"viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M3 13l3-8h12l3 8v6H3z"/><path d="M3 13h5l1 3h6l1-3h5"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M6 3h12M6 21h12"/><path d="M7 3c0 5 5 5 5 9s-5 4-5 9"/><path d="M17 3c0 5-5 5-5 9s5 4 5 9"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.8"/></symbol>
+</svg>
+
+<div class="app">
+
+  <!-- ================= Sidebar ================= -->
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" th:href="@{/}">
+      <span class="brand-mark">
+        <svg class="icon" aria-hidden="true"><use href="#i-ticket"/></svg>
+      </span>
+      <span>
+        <span class="brand-name">Chamados</span><br>
+        <span class="brand-sub">Central de atendimento</span>
+      </span>
+    </a>
+
+    <nav class="nav" aria-label="Navegação principal">
+      <span class="nav-label">Menu</span>
+      <a class="nav-link" href="#" aria-current="page">
+        <svg class="icon" aria-hidden="true"><use href="#i-home"/></svg> Início
+      </a>
+      <a class="nav-link" href="#">
+        <svg class="icon" aria-hidden="true"><use href="#i-ticket"/></svg> Chamados
+      </a>
+      <a class="nav-link" href="#">
+        <svg class="icon" aria-hidden="true"><use href="#i-users"/></svg> Clientes
+      </a>
+      <a class="nav-link" href="#">
+        <svg class="icon" aria-hidden="true"><use href="#i-wrench"/></svg> Técnicos
+      </a>
+      <a class="nav-link" href="#">
+        <svg class="icon" aria-hidden="true"><use href="#i-tag"/></svg> Categorias
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <strong>Precisa de ajuda?</strong>
+      Consulte a documentação da API em <a class="link" style="color:#fff;text-decoration:underline" th:href="@{/swagger-ui.html}">/swagger-ui.html</a>.
+    </div>
+  </aside>
+
+  <div class="backdrop" id="backdrop" aria-hidden="true"></div>
+
+  <!-- ================= Conteúdo ================= -->
+  <div class="main">
+
+    <header class="topbar">
+      <button class="menu-toggle" id="menu-toggle" type="button"
+              aria-controls="sidebar" aria-expanded="true" aria-label="Alternar menu lateral">
+        <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+      <form class="search" role="search" onsubmit="return false">
+        <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+        <label class="sr-only" for="busca">Buscar chamados</label>
+        <input id="busca" type="search" placeholder="Buscar por título, cliente ou nº do chamado">
+      </form>
+      <button class="btn btn-primary" type="button">
+        <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> Novo chamado
+      </button>
+    </header>
+
+    <main class="content">
+
+      <section class="page-head">
+        <h1>Painel de chamados</h1>
+        <p>Acompanhe o andamento dos atendimentos e priorize o que precisa de atenção.</p>
+      </section>
+
+      <!-- Resumo por status -->
+      <section class="stats" aria-label="Resumo por status">
+        <article class="card stat is-highlight">
+          <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-inbox"/></svg></span>
+          <div>
+            <p class="stat-label">Abertos</p>
+            <p class="stat-value">24</p>
+            <p class="stat-hint">6 novos hoje</p>
+          </div>
+        </article>
+        <article class="card stat">
+          <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg></span>
+          <div>
+            <p class="stat-label">Em atendimento</p>
+            <p class="stat-value">13</p>
+            <p class="stat-hint">com técnico atribuído</p>
+          </div>
+        </article>
+        <article class="card stat">
+          <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-hourglass"/></svg></span>
+          <div>
+            <p class="stat-label">Aguardando cliente</p>
+            <p class="stat-value">7</p>
+            <p class="stat-hint">pendentes de resposta</p>
+          </div>
+        </article>
+        <article class="card stat">
+          <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span>
+          <div>
+            <p class="stat-label">Fechados</p>
+            <p class="stat-value">58</p>
+            <p class="stat-hint">neste mês</p>
+          </div>
+        </article>
+      </section>
+
+      <div class="grid">
+
+        <!-- Chamados recentes -->
+        <section class="card" aria-labelledby="recentes">
+          <div class="card-head">
+            <h2 id="recentes">Chamados recentes</h2>
+            <a class="link" href="#">Ver todos</a>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Nº</th>
+                  <th scope="col">Chamado</th>
+                  <th scope="col">Prioridade</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Abertura</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="t-id">#1048</td>
+                  <td><div class="t-title">Servidor de e-mail fora do ar</div><div class="t-meta">Marina Costa · Infraestrutura</div></td>
+                  <td><span class="prio prio-critica">Crítica</span></td>
+                  <td><span class="badge badge-atendimento">Em atendimento</span></td>
+                  <td class="t-date">09/11/2026</td>
+                </tr>
+                <tr>
+                  <td class="t-id">#1047</td>
+                  <td><div class="t-title">Erro ao emitir nota fiscal</div><div class="t-meta">Ricardo Alves · Sistemas</div></td>
+                  <td><span class="prio prio-alta">Alta</span></td>
+                  <td><span class="badge badge-aberto">Aberto</span></td>
+                  <td class="t-date">09/11/2026</td>
+                </tr>
+                <tr>
+                  <td class="t-id">#1046</td>
+                  <td><div class="t-title">Solicitação de novo acesso à VPN</div><div class="t-meta">Fernanda Lima · Acessos</div></td>
+                  <td><span class="prio prio-media">Média</span></td>
+                  <td><span class="badge badge-aguardando">Aguardando cliente</span></td>
+                  <td class="t-date">08/11/2026</td>
+                </tr>
+                <tr>
+                  <td class="t-id">#1045</td>
+                  <td><div class="t-title">Impressora do 2º andar sem toner</div><div class="t-meta">Paulo Mendes · Hardware</div></td>
+                  <td><span class="prio prio-baixa">Baixa</span></td>
+                  <td><span class="badge badge-aberto">Aberto</span></td>
+                  <td class="t-date">08/11/2026</td>
+                </tr>
+                <tr>
+                  <td class="t-id">#1044</td>
+                  <td><div class="t-title">Lentidão no sistema de matrículas</div><div class="t-meta">Juliana Reis · Sistemas</div></td>
+                  <td><span class="prio prio-alta">Alta</span></td>
+                  <td><span class="badge badge-fechado">Fechado</span></td>
+                  <td class="t-date">06/11/2026</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Painel lateral -->
+        <div class="side">
+
+          <section class="card" aria-labelledby="prioridades">
+            <div class="card-head"><h2 id="prioridades">Em aberto por prioridade</h2></div>
+            <div class="panel-body bars">
+              <div class="bar-row">
+                <div class="bar-top"><span>Crítica</span><span>3</span></div>
+                <div class="bar bar-critica"><i style="width:8%"></i></div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-top"><span>Alta</span><span>9</span></div>
+                <div class="bar bar-alta"><i style="width:25%"></i></div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-top"><span>Média</span><span>17</span></div>
+                <div class="bar bar-media"><i style="width:47%"></i></div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-top"><span>Baixa</span><span>15</span></div>
+                <div class="bar bar-baixa"><i style="width:42%"></i></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="atividade">
+            <div class="card-head"><h2 id="atividade">Atividade recente</h2></div>
+            <ul class="panel-body activity">
+              <li>
+                <span class="activity-dot"></span>
+                <div><p><strong>Carlos</strong> comentou no chamado #1048</p><time>há 12 minutos</time></div>
+              </li>
+              <li>
+                <span class="activity-dot"></span>
+                <div><p>Chamado #1047 foi <strong>aberto</strong></p><time>há 1 hora</time></div>
+              </li>
+              <li>
+                <span class="activity-dot"></span>
+                <div><p><strong>Ana</strong> assumiu o chamado #1043</p><time>há 3 horas</time></div>
+              </li>
+            </ul>
+          </section>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var toggle = document.getElementById('menu-toggle');
+    var mobileQuery = window.matchMedia('(max-width: 860px)');
+
+    function sync() {
+      toggle.setAttribute('aria-expanded', String(!root.classList.contains('sidebar-collapsed')));
+    }
+
+    function setCollapsed(collapsed) {
+      root.classList.toggle('sidebar-collapsed', collapsed);
+      // Só o desktop guarda a preferência; no celular o menu é uma gaveta temporária.
+      if (!mobileQuery.matches) {
+        try { localStorage.setItem('sidebar', collapsed ? 'closed' : 'open'); } catch (e) {}
+      }
+      sync();
+    }
+
+    toggle.addEventListener('click', function () {
+      setCollapsed(!root.classList.contains('sidebar-collapsed'));
+    });
+
+    // Gaveta (celular): fecha ao clicar fora, com Esc ou ao escolher um item.
+    document.getElementById('backdrop').addEventListener('click', function () { setCollapsed(true); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && mobileQuery.matches && !root.classList.contains('sidebar-collapsed')) {
+        setCollapsed(true);
+        toggle.focus();
+      }
+    });
+    document.querySelectorAll('#sidebar .nav-link').forEach(function (link) {
+      link.addEventListener('click', function () { if (mobileQuery.matches) setCollapsed(true); });
+    });
+
+    // Ao cruzar o breakpoint, volta ao padrão de cada modo.
+    mobileQuery.addEventListener('change', function (e) {
+      var saved = null;
+      try { saved = localStorage.getItem('sidebar'); } catch (err) {}
+      root.classList.toggle('sidebar-collapsed', e.matches || saved === 'closed');
+      sync();
+    });
+
+    sync();
+  })();
+</script>
+
+</body>
+</html>
