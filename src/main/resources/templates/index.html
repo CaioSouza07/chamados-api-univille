@@ -39,32 +39,33 @@
 
   <!-- ================= Sidebar ================= -->
   <aside class="sidebar" id="sidebar">
-    <a class="brand" th:href="@{/}">
-      <span class="brand-mark">
-        <svg class="icon" aria-hidden="true"><use href="#i-ticket"/></svg>
-      </span>
-      <span>
+    <div class="brand">
+      <button class="brand-mark sidebar-toggle" id="sidebar-toggle" type="button"
+              aria-controls="sidebar" aria-expanded="true" aria-label="Ocultar menu lateral" title="Ocultar menu">
+        <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+      <a class="brand-text" th:href="@{/}">
         <span class="brand-name">Chamados</span><br>
         <span class="brand-sub">Central de atendimento</span>
-      </span>
-    </a>
+      </a>
+    </div>
 
     <nav class="nav" aria-label="Navegação principal">
       <span class="nav-label">Menu</span>
-      <a class="nav-link" href="#" aria-current="page">
-        <svg class="icon" aria-hidden="true"><use href="#i-home"/></svg> Início
+      <a class="nav-link" href="#" aria-current="page" title="Início">
+        <svg class="icon" aria-hidden="true"><use href="#i-home"/></svg> <span class="nav-text">Início</span>
       </a>
-      <a class="nav-link" href="#">
-        <svg class="icon" aria-hidden="true"><use href="#i-ticket"/></svg> Chamados
+      <a class="nav-link" href="#" title="Chamados">
+        <svg class="icon" aria-hidden="true"><use href="#i-ticket"/></svg> <span class="nav-text">Chamados</span>
       </a>
-      <a class="nav-link" href="#">
-        <svg class="icon" aria-hidden="true"><use href="#i-users"/></svg> Clientes
+      <a class="nav-link" href="#" title="Clientes">
+        <svg class="icon" aria-hidden="true"><use href="#i-users"/></svg> <span class="nav-text">Clientes</span>
       </a>
-      <a class="nav-link" href="#">
-        <svg class="icon" aria-hidden="true"><use href="#i-wrench"/></svg> Técnicos
+      <a class="nav-link" href="#" title="Técnicos">
+        <svg class="icon" aria-hidden="true"><use href="#i-wrench"/></svg> <span class="nav-text">Técnicos</span>
       </a>
-      <a class="nav-link" href="#">
-        <svg class="icon" aria-hidden="true"><use href="#i-tag"/></svg> Categorias
+      <a class="nav-link" href="#" title="Categorias">
+        <svg class="icon" aria-hidden="true"><use href="#i-tag"/></svg> <span class="nav-text">Categorias</span>
       </a>
     </nav>
 
@@ -80,8 +81,9 @@
   <div class="main">
 
     <header class="topbar">
+      <!-- Só aparece no celular, onde o menu some por completo (gaveta) -->
       <button class="menu-toggle" id="menu-toggle" type="button"
-              aria-controls="sidebar" aria-expanded="true" aria-label="Alternar menu lateral">
+              aria-controls="sidebar" aria-expanded="true" aria-label="Abrir menu lateral">
         <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
       </button>
       <form class="search" role="search" onsubmit="return false">
@@ -107,23 +109,23 @@
           <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-inbox"/></svg></span>
           <div>
             <p class="stat-label">Abertos</p>
-            <p class="stat-value">24</p>
-            <p class="stat-hint">6 novos hoje</p>
+            <p class="stat-value" th:text="${painel.abertos}">0</p>
+            <p class="stat-hint" th:text="${painel.abertosHoje == 1 ? '1 novo hoje' : painel.abertosHoje + ' novos hoje'}">0 novos hoje</p>
           </div>
         </article>
         <article class="card stat">
           <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg></span>
           <div>
             <p class="stat-label">Em atendimento</p>
-            <p class="stat-value">13</p>
-            <p class="stat-hint">com técnico atribuído</p>
+            <p class="stat-value" th:text="${painel.emAtendimento}">0</p>
+            <p class="stat-hint">em andamento</p>
           </div>
         </article>
         <article class="card stat">
           <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-hourglass"/></svg></span>
           <div>
             <p class="stat-label">Aguardando cliente</p>
-            <p class="stat-value">7</p>
+            <p class="stat-value" th:text="${painel.aguardandoCliente}">0</p>
             <p class="stat-hint">pendentes de resposta</p>
           </div>
         </article>
@@ -131,7 +133,7 @@
           <span class="stat-icon"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></span>
           <div>
             <p class="stat-label">Fechados</p>
-            <p class="stat-value">58</p>
+            <p class="stat-value" th:text="${painel.fechadosNoMes}">0</p>
             <p class="stat-hint">neste mês</p>
           </div>
         </article>
@@ -157,40 +159,18 @@
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td class="t-id">#1048</td>
-                  <td><div class="t-title">Servidor de e-mail fora do ar</div><div class="t-meta">Marina Costa · Infraestrutura</div></td>
-                  <td><span class="prio prio-critica">Crítica</span></td>
-                  <td><span class="badge badge-atendimento">Em atendimento</span></td>
-                  <td class="t-date">09/11/2026</td>
+                <tr th:each="c : ${painel.recentes}">
+                  <td class="t-id" th:text="${'#' + c.id}">#1</td>
+                  <td>
+                    <div class="t-title" th:text="${c.titulo}">Título</div>
+                    <div class="t-meta" th:text="${c.cliente.nome + ' · ' + c.categoria.nome}">Cliente · Categoria</div>
+                  </td>
+                  <td><span th:class="${'prio prio-' + c.prioridade.css}" th:text="${c.prioridade.label}">Média</span></td>
+                  <td><span th:class="${'badge badge-' + c.status.css}" th:text="${c.status.label}">Aberto</span></td>
+                  <td class="t-date" th:text="${#temporals.format(c.dataAbertura, 'dd/MM/yyyy')}">01/01/2026</td>
                 </tr>
-                <tr>
-                  <td class="t-id">#1047</td>
-                  <td><div class="t-title">Erro ao emitir nota fiscal</div><div class="t-meta">Ricardo Alves · Sistemas</div></td>
-                  <td><span class="prio prio-alta">Alta</span></td>
-                  <td><span class="badge badge-aberto">Aberto</span></td>
-                  <td class="t-date">09/11/2026</td>
-                </tr>
-                <tr>
-                  <td class="t-id">#1046</td>
-                  <td><div class="t-title">Solicitação de novo acesso à VPN</div><div class="t-meta">Fernanda Lima · Acessos</div></td>
-                  <td><span class="prio prio-media">Média</span></td>
-                  <td><span class="badge badge-aguardando">Aguardando cliente</span></td>
-                  <td class="t-date">08/11/2026</td>
-                </tr>
-                <tr>
-                  <td class="t-id">#1045</td>
-                  <td><div class="t-title">Impressora do 2º andar sem toner</div><div class="t-meta">Paulo Mendes · Hardware</div></td>
-                  <td><span class="prio prio-baixa">Baixa</span></td>
-                  <td><span class="badge badge-aberto">Aberto</span></td>
-                  <td class="t-date">08/11/2026</td>
-                </tr>
-                <tr>
-                  <td class="t-id">#1044</td>
-                  <td><div class="t-title">Lentidão no sistema de matrículas</div><div class="t-meta">Juliana Reis · Sistemas</div></td>
-                  <td><span class="prio prio-alta">Alta</span></td>
-                  <td><span class="badge badge-fechado">Fechado</span></td>
-                  <td class="t-date">06/11/2026</td>
+                <tr th:if="${#lists.isEmpty(painel.recentes)}">
+                  <td class="empty" colspan="5">Nenhum chamado registrado ainda.</td>
                 </tr>
               </tbody>
             </table>
@@ -203,21 +183,9 @@
           <section class="card" aria-labelledby="prioridades">
             <div class="card-head"><h2 id="prioridades">Em aberto por prioridade</h2></div>
             <div class="panel-body bars">
-              <div class="bar-row">
-                <div class="bar-top"><span>Crítica</span><span>3</span></div>
-                <div class="bar bar-critica"><i style="width:8%"></i></div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-top"><span>Alta</span><span>9</span></div>
-                <div class="bar bar-alta"><i style="width:25%"></i></div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-top"><span>Média</span><span>17</span></div>
-                <div class="bar bar-media"><i style="width:47%"></i></div>
-              </div>
-              <div class="bar-row">
-                <div class="bar-top"><span>Baixa</span><span>15</span></div>
-                <div class="bar bar-baixa"><i style="width:42%"></i></div>
+              <div class="bar-row" th:each="p : ${painel.porPrioridade}">
+                <div class="bar-top"><span th:text="${p.prioridade.label}">Média</span><span th:text="${p.quantidade}">0</span></div>
+                <div th:class="${'bar bar-' + p.prioridade.css}"><i th:style="${'width:' + p.percentual + '%'}"></i></div>
               </div>
             </div>
           </section>
@@ -225,18 +193,19 @@
           <section class="card" aria-labelledby="atividade">
             <div class="card-head"><h2 id="atividade">Atividade recente</h2></div>
             <ul class="panel-body activity">
-              <li>
+              <li th:each="a : ${painel.atividades}">
                 <span class="activity-dot"></span>
-                <div><p><strong>Carlos</strong> comentou no chamado #1048</p><time>há 12 minutos</time></div>
+                <div>
+                  <p>
+                    Chamado <th:block th:text="${'#' + a.chamadoId}">#1</th:block>
+                    <th:block th:if="${a.statusAnterior == null}">foi <strong>aberto</strong></th:block>
+                    <th:block th:unless="${a.statusAnterior == null}">mudou para <strong th:text="${a.statusNovo.label}">Status</strong></th:block>
+                  </p>
+                  <time th:datetime="${#temporals.format(a.data, 'yyyy-MM-dd''T''HH:mm')}"
+                        th:text="${#temporals.format(a.data, 'dd/MM/yyyy HH:mm')}">01/01/2026 10:00</time>
+                </div>
               </li>
-              <li>
-                <span class="activity-dot"></span>
-                <div><p>Chamado #1047 foi <strong>aberto</strong></p><time>há 1 hora</time></div>
-              </li>
-              <li>
-                <span class="activity-dot"></span>
-                <div><p><strong>Ana</strong> assumiu o chamado #1043</p><time>há 3 horas</time></div>
-              </li>
+              <li class="empty" th:if="${#lists.isEmpty(painel.atividades)}">Nenhuma atividade registrada ainda.</li>
             </ul>
           </section>
 
@@ -250,11 +219,17 @@
 <script>
   (function () {
     var root = document.documentElement;
-    var toggle = document.getElementById('menu-toggle');
+    var toggle = document.getElementById('menu-toggle');          // topo (celular)
+    var sidebarToggle = document.getElementById('sidebar-toggle'); // dentro do menu
     var mobileQuery = window.matchMedia('(max-width: 860px)');
 
     function sync() {
-      toggle.setAttribute('aria-expanded', String(!root.classList.contains('sidebar-collapsed')));
+      var open = !root.classList.contains('sidebar-collapsed');
+      toggle.setAttribute('aria-expanded', String(open));
+      sidebarToggle.setAttribute('aria-expanded', String(open));
+      var label = open ? 'Ocultar menu lateral' : 'Mostrar menu lateral';
+      sidebarToggle.setAttribute('aria-label', label);
+      sidebarToggle.title = open ? 'Ocultar menu' : 'Mostrar menu';
     }
 
     function setCollapsed(collapsed) {
@@ -266,8 +241,14 @@
       sync();
     }
 
-    toggle.addEventListener('click', function () {
+    function onToggleClick() {
       setCollapsed(!root.classList.contains('sidebar-collapsed'));
+    }
+    toggle.addEventListener('click', onToggleClick);
+    sidebarToggle.addEventListener('click', function () {
+      onToggleClick();
+      // No celular o menu some ao fechar; devolve o foco ao botão do topo.
+      if (mobileQuery.matches) toggle.focus();
     });
 
     // Gaveta (celular): fecha ao clicar fora, com Esc ou ao escolher um item.
