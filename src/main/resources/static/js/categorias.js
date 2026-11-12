@@ -2,6 +2,7 @@
 (function () {
   const tela = document.getElementById('tela-categorias');
   const API = tela.dataset.api; // "/categorias" (respeita o context path)
+  const COLUNAS = 3;
 
   const lista = document.getElementById('lista');
   const contador = document.getElementById('contador');
@@ -14,6 +15,7 @@
   const campoDescricao = document.getElementById('descricao');
   const btnSalvar = document.getElementById('btn-salvar');
   const modalCategoria = ui.modal(document.getElementById('modal-categoria'));
+  const atualizarContadores = ui.bindCounters(form);
 
   const excluirNome = document.getElementById('excluir-nome');
   const excluirErro = document.getElementById('excluir-erro');
@@ -27,25 +29,21 @@
   // ---------------- Listagem ----------------
 
   async function carregar() {
-    mostrarMensagem('Carregando categorias…', { carregando: true });
+    ui.tableMessage(lista, COLUNAS, 'Carregando categorias…', { loading: true });
     contador.textContent = '';
     try {
       categorias = await api.get(API);
       categorias.sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
       renderizar();
     } catch (e) {
-      mostrarMensagem(e.message, { erro: true });
+      ui.tableMessage(lista, COLUNAS, e.message, { error: true, onRetry: carregar });
     }
   }
 
-  function normalizar(texto) {
-    return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-  }
-
   function renderizar() {
-    const termo = normalizar(filtro.value.trim());
+    const termo = ui.normalize(filtro.value.trim());
     const visiveis = termo
-      ? categorias.filter((c) => normalizar(c.nome + ' ' + c.descricao).includes(termo))
+      ? categorias.filter((c) => ui.normalize(c.nome + ' ' + c.descricao).includes(termo))
       : categorias;
 
     contador.textContent = termo
@@ -53,11 +51,11 @@
       : categorias.length + (categorias.length === 1 ? ' categoria' : ' categorias');
 
     if (categorias.length === 0) {
-      mostrarMensagem('Nenhuma categoria cadastrada ainda. Clique em “Nova categoria” para começar.');
+      ui.tableMessage(lista, COLUNAS, 'Nenhuma categoria cadastrada ainda. Clique em “Nova categoria” para começar.');
       return;
     }
     if (visiveis.length === 0) {
-      mostrarMensagem('Nenhuma categoria encontrada para “' + filtro.value.trim() + '”.');
+      ui.tableMessage(lista, COLUNAS, 'Nenhuma categoria encontrada para “' + filtro.value.trim() + '”.');
       return;
     }
 
@@ -80,8 +78,14 @@
     const acoes = document.createElement('div');
     acoes.className = 'actions';
     acoes.append(
-      botaoAcao('Editar', 'i-edit', 'btn-ghost', 'Editar categoria ' + categoria.nome, () => abrirFormulario(categoria)),
-      botaoAcao('Excluir', 'i-trash', 'btn-danger-ghost', 'Excluir categoria ' + categoria.nome, () => abrirExclusao(categoria))
+      ui.actionButton({
+        text: 'Editar', icon: 'i-edit', variant: 'btn-ghost',
+        label: 'Editar categoria ' + categoria.nome, onClick: () => abrirFormulario(categoria),
+      }),
+      ui.actionButton({
+        text: 'Excluir', icon: 'i-trash', variant: 'btn-danger-ghost',
+        label: 'Excluir categoria ' + categoria.nome, onClick: () => abrirExclusao(categoria),
+      })
     );
     tdAcoes.appendChild(acoes);
 
@@ -89,66 +93,11 @@
     return tr;
   }
 
-  function botaoAcao(texto, iconId, variante, label, onClick) {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'btn btn-sm ' + variante;
-    btn.setAttribute('aria-label', label);
-    btn.title = label;
-    btn.appendChild(ui.icon(iconId));
-    const span = document.createElement('span');
-    span.className = 'btn-label';
-    span.textContent = texto;
-    btn.appendChild(span);
-    btn.addEventListener('click', onClick);
-    return btn;
-  }
-
-  function mostrarMensagem(texto, opcoes) {
-    opcoes = opcoes || {};
-    const td = document.createElement('td');
-    td.className = 'empty' + (opcoes.erro ? ' empty-error' : '');
-    td.colSpan = 3;
-
-    if (opcoes.carregando) {
-      const spinner = document.createElement('span');
-      spinner.className = 'spinner';
-      spinner.setAttribute('aria-hidden', 'true');
-      td.append(spinner, ' ');
-    }
-    td.append(texto);
-
-    if (opcoes.erro) {
-      const retry = document.createElement('button');
-      retry.type = 'button';
-      retry.className = 'btn btn-ghost btn-sm';
-      retry.append(ui.icon('i-refresh'), 'Tentar novamente');
-      retry.addEventListener('click', carregar);
-      const wrap = document.createElement('div');
-      wrap.className = 'empty-action';
-      wrap.appendChild(retry);
-      td.appendChild(wrap);
-    }
-
-    const tr = document.createElement('tr');
-    tr.appendChild(td);
-    lista.replaceChildren(tr);
-  }
-
   filtro.addEventListener('input', () => {
     if (categorias.length) renderizar();
   });
 
   // ---------------- Criar / editar ----------------
-
-  function atualizarContadores() {
-    document.querySelectorAll('[data-contador]').forEach((el) => {
-      const campo = document.getElementById(el.dataset.contador);
-      const max = campo.maxLength;
-      el.textContent = campo.value.length + '/' + max;
-      el.classList.toggle('is-limit', campo.value.length >= max * 0.9);
-    });
-  }
 
   function abrirFormulario(categoria) {
     emEdicao = categoria;
@@ -163,12 +112,8 @@
     campoNome.focus();
   }
 
-
   [campoNome, campoDescricao].forEach((campo) => {
-    campo.addEventListener('input', () => {
-      campo.setCustomValidity('');
-      atualizarContadores();
-    });
+    campo.addEventListener('input', () => campo.setCustomValidity(''));
   });
 
   form.addEventListener('submit', async (e) => {

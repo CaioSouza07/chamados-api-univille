@@ -57,7 +57,7 @@ body {
 }
 
 a { color: inherit; text-decoration: none; }
-button, input, textarea { font: inherit; color: inherit; }
+button, input, textarea, select { font: inherit; color: inherit; }
 [hidden] { display: none !important; }
 h1, h2, h3, p { margin: 0; }
 ul { margin: 0; padding: 0; list-style: none; }
@@ -505,7 +505,7 @@ tbody tr:hover { background: #f9fbfd; }
 
 .t-id { color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .t-title { font-weight: 600; }
-.t-meta { font-size: 13px; color: var(--text-muted); }
+.t-meta { font-size: 13px; color: var(--text-muted); overflow-wrap: anywhere; }
 .t-date { white-space: nowrap; color: var(--text-muted); }
 .t-desc { color: var(--text-muted); }
 .t-col-nome { width: 26%; }
@@ -538,6 +538,10 @@ td.t-actions { width: 1%; text-align: right; white-space: nowrap; }
 .badge-atendimento { background: var(--dusk-600); color: #fff; }
 .badge-aguardando { background: var(--media-bg); color: var(--media-fg); }
 .badge-fechado { background: var(--ok-bg); color: var(--ok-fg); }
+
+/* Perfil do técnico */
+.badge-perfil-admin { background: var(--dusk-700); color: #fff; }
+.badge-perfil-tecnico { background: var(--dusk-100); color: var(--dusk-700); }
 
 .prio { font-size: 13px; font-weight: 600; white-space: nowrap; }
 .prio-critica { color: var(--crit-fg); }
@@ -623,7 +627,10 @@ td.empty-error { color: var(--crit-fg); }
 
 .field { display: grid; gap: 6px; }
 
-.field label { font-size: 14px; font-weight: 600; }
+.field > label,
+.field > legend { padding: 0; font-size: 14px; font-weight: 600; }
+
+fieldset.field { margin: 0; padding: 0; border: 0; min-width: 0; }
 
 .input {
   width: 100%;
@@ -635,6 +642,69 @@ td.empty-error { color: var(--crit-fg); }
 }
 
 textarea.input { min-height: 88px; resize: vertical; }
+
+select.input {
+  padding-right: 38px;
+  appearance: none;
+  cursor: pointer;
+  background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2355697b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center / 16px;
+}
+
+/* Versão compacta (barras de ferramentas dos cards) */
+.input-sm { width: auto; height: 36px; padding-block: 0; border-radius: 8px; font-size: 14px; }
+
+/* Grupo de opções em cartões (radio) — ex.: perfil do técnico */
+.choice-group { grid-template-columns: 1fr 1fr; gap: 10px; }
+.choice-group > legend { margin-bottom: 6px; }
+
+.choice { position: relative; display: flex; cursor: pointer; }
+
+.choice input { position: absolute; opacity: 0; pointer-events: none; }
+
+.choice-body {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 12px 14px 12px 40px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--text-muted);
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.choice-body strong { font-size: 14px; font-weight: 600; color: var(--text); }
+
+/* "Bolinha" do radio */
+.choice-body::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 15px;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.choice:hover .choice-body { background: var(--dusk-50); }
+
+.choice input:checked + .choice-body {
+  border-color: var(--dusk-500);
+  background: var(--dusk-50);
+  box-shadow: 0 0 0 1px var(--dusk-500);
+}
+
+.choice input:checked + .choice-body::before {
+  border-color: var(--dusk-600);
+  box-shadow: inset 0 0 0 4px var(--surface);
+  background: var(--dusk-600);
+}
+
+.choice input:focus-visible + .choice-body { outline: 2px solid var(--dusk-500); outline-offset: 2px; }
 
 .input::placeholder { color: #7d90a1; }
 .input:focus { outline: none; border-color: var(--dusk-500); box-shadow: 0 0 0 3px var(--dusk-100); }
@@ -793,11 +863,14 @@ textarea.input { min-height: 88px; resize: vertical; }
 
   .page-head-actions .btn { width: 100%; }
   .card-tools { width: 100%; flex-wrap: wrap; }
+  .card-tools .input-sm { flex: 1; }
+  .choice-group { grid-template-columns: 1fr; }
   .search-sm { width: auto; }
 
   /* Ações da tabela viram só ícone (o nome continua no aria-label) */
   .actions .btn-label { display: none; }
   .actions .btn-sm { width: 34px; padding: 0; }
+  th, td { padding-inline: 12px; }
 
   .modal { width: calc(100% - 24px); }
   .modal-body { padding: 18px 16px; }

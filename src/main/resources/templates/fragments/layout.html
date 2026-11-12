@@ -87,7 +87,7 @@
       <a class="nav-link" href="#" th:aria-current="${ativo == 'clientes'} ? 'page'" title="Clientes">
         <svg class="icon" aria-hidden="true"><use href="#i-users"/></svg> <span class="nav-text">Clientes</span>
       </a>
-      <a class="nav-link" href="#" th:aria-current="${ativo == 'tecnicos'} ? 'page'" title="Técnicos">
+      <a class="nav-link" th:href="@{/telas/tecnicos}" th:aria-current="${ativo == 'tecnicos'} ? 'page'" title="Técnicos">
         <svg class="icon" aria-hidden="true"><use href="#i-wrench"/></svg> <span class="nav-text">Técnicos</span>
       </a>
       <a class="nav-link" th:href="@{/telas/categorias}" th:aria-current="${ativo == 'categorias'} ? 'page'" title="Categorias">

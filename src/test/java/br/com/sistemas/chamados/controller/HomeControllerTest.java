@@ -56,4 +56,16 @@ class HomeControllerTest {
                 .andExpect(content().string(containsString("href=\"/telas/categorias\" aria-current=\"page\"")))
                 .andExpect(content().string(containsString("/js/categorias.js")));
     }
+
+    @Test
+    @DisplayName("GET /telas/tecnicos renderiza a tela de técnicos com o menu marcado")
+    void tecnicos() throws Exception {
+        mockMvc.perform(get("/telas/tecnicos"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("tecnicos"))
+                .andExpect(content().string(containsString("<h1>Técnicos</h1>")))
+                .andExpect(content().string(containsString("data-api=\"/tecnicos\"")))
+                .andExpect(content().string(containsString("href=\"/telas/tecnicos\" aria-current=\"page\"")))
+                .andExpect(content().string(containsString("/js/tecnicos.js")));
+    }
 }

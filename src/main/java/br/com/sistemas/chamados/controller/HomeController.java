@@ -28,4 +28,9 @@ public class HomeController {
     public String categorias() {
         return "categorias";
     }
+
+    @GetMapping("/telas/tecnicos")
+    public String tecnicos() {
+        return "tecnicos";
+    }
 }

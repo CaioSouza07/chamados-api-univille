@@ -7,6 +7,15 @@
  *   ui.hideError(el)
  *   ui.modal(dialogEl)            -> { open(), close() } com fechamento por [data-fechar],
  *                                    clique fora e Esc (nativo do <dialog>)
+ *
+ * Helpers de tela de cadastro (listagem + formulário):
+ *   ui.normalize(texto)           -> minúsculo e sem acentos (para filtros)
+ *   ui.tableMessage(tbody, colunas, texto, { loading, error, onRetry })
+ *                                 -> linha única de "carregando", "vazio" ou "erro"
+ *   ui.actionButton({ text, icon, variant, label, onClick })
+ *                                 -> botão pequeno das ações da tabela (vira só ícone no celular)
+ *   ui.bindCounters(form)         -> liga os contadores [data-contador="idDoCampo"]; devolve a
+ *                                    função para atualizá-los (ex.: depois de preencher o form)
  */
 (function () {
   const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -92,5 +101,73 @@
     };
   }
 
-  window.ui = { icon, toast, showError, hideError, modal };
+  function normalize(texto) {
+    return String(texto).normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+  }
+
+  function tableMessage(tbody, colunas, texto, opcoes) {
+    opcoes = opcoes || {};
+    const td = document.createElement('td');
+    td.className = 'empty' + (opcoes.error ? ' empty-error' : '');
+    td.colSpan = colunas;
+
+    if (opcoes.loading) {
+      const spinner = document.createElement('span');
+      spinner.className = 'spinner';
+      spinner.setAttribute('aria-hidden', 'true');
+      td.append(spinner, ' ');
+    }
+    td.append(texto);
+
+    if (opcoes.error && opcoes.onRetry) {
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.className = 'btn btn-ghost btn-sm';
+      retry.append(icon('i-refresh'), 'Tentar novamente');
+      retry.addEventListener('click', opcoes.onRetry);
+      const wrap = document.createElement('div');
+      wrap.className = 'empty-action';
+      wrap.appendChild(retry);
+      td.appendChild(wrap);
+    }
+
+    const tr = document.createElement('tr');
+    tr.appendChild(td);
+    tbody.replaceChildren(tr);
+  }
+
+  function actionButton(opcoes) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-sm ' + opcoes.variant;
+    btn.setAttribute('aria-label', opcoes.label);
+    btn.title = opcoes.label;
+    btn.appendChild(icon(opcoes.icon));
+    const span = document.createElement('span');
+    span.className = 'btn-label';
+    span.textContent = opcoes.text;
+    btn.appendChild(span);
+    btn.addEventListener('click', opcoes.onClick);
+    return btn;
+  }
+
+  function bindCounters(form) {
+    const contadores = [...form.querySelectorAll('[data-contador]')].map((el) => ({
+      el,
+      campo: form.querySelector('#' + el.dataset.contador),
+    }));
+
+    function atualizar() {
+      contadores.forEach(({ el, campo }) => {
+        const max = campo.maxLength;
+        el.textContent = campo.value.length + '/' + max;
+        el.classList.toggle('is-limit', campo.value.length >= max * 0.9);
+      });
+    }
+
+    contadores.forEach(({ campo }) => campo.addEventListener('input', atualizar));
+    return atualizar;
+  }
+
+  window.ui = { icon, toast, showError, hideError, modal, normalize, tableMessage, actionButton, bindCounters };
 })();
