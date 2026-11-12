@@ -19,4 +19,13 @@ public class HomeController {
         model.addAttribute("painel", dashboardService.carregar());
         return "index";
     }
+
+    /**
+     * Telas ficam em /telas/** porque os caminhos "puros" (ex.: /categorias) pertencem à API REST.
+     * Os dados são carregados no navegador via fetch na própria API.
+     */
+    @GetMapping("/telas/categorias")
+    public String categorias() {
+        return "categorias";
+    }
 }

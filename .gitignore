@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Scripts locais de desenvolvimento ###
+dev.sh
+dev.ps1

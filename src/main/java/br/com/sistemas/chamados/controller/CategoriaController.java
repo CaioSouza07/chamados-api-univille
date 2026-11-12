@@ -26,7 +26,7 @@ public class CategoriaController {
     @PostMapping
     public ResponseEntity<CategoriaResponse> criar(@Valid @RequestBody CategoriaRequest dto) {
         CategoriaResponse criado = categoriaService.criar(dto);
-        return ResponseEntity.created(URI.create("/clientes/" + criado.id())).body(criado);
+        return ResponseEntity.created(URI.create("/categorias/" + criado.id())).body(criado);
     }
 
     @GetMapping
