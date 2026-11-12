@@ -4,13 +4,6 @@
   const API = tela.dataset.api; // "/tecnicos" (respeita o context path)
   const COLUNAS = 3;
 
-  // Rótulos do enum Perfil (a API devolve o nome do enum).
-  const PERFIS = {
-    TECNICO: { label: 'Técnico', css: 'tecnico' },
-    ADMIN: { label: 'Administrador', css: 'admin' },
-  };
-  const perfil = (valor) => PERFIS[valor] || { label: valor, css: 'tecnico' };
-
   const lista = document.getElementById('lista');
   const contador = document.getElementById('contador');
   const filtro = document.getElementById('filtro');
@@ -87,7 +80,7 @@
     tdTecnico.append(nome, email);
 
     const tdPerfil = document.createElement('td');
-    const p = perfil(tecnico.perfil);
+    const p = dominio.perfil(tecnico.perfil);
     const badge = document.createElement('span');
     badge.className = 'badge badge-perfil-' + p.css;
     badge.textContent = p.label;

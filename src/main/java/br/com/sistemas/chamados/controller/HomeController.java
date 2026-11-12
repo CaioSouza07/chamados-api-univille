@@ -33,4 +33,9 @@ public class HomeController {
     public String tecnicos() {
         return "tecnicos";
     }
+
+    @GetMapping("/telas/clientes")
+    public String clientes() {
+        return "clientes";
+    }
 }

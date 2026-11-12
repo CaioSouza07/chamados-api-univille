@@ -84,7 +84,7 @@
       <a class="nav-link" href="#" th:aria-current="${ativo == 'chamados'} ? 'page'" title="Chamados">
         <svg class="icon" aria-hidden="true"><use href="#i-ticket"/></svg> <span class="nav-text">Chamados</span>
       </a>
-      <a class="nav-link" href="#" th:aria-current="${ativo == 'clientes'} ? 'page'" title="Clientes">
+      <a class="nav-link" th:href="@{/telas/clientes}" th:aria-current="${ativo == 'clientes'} ? 'page'" title="Clientes">
         <svg class="icon" aria-hidden="true"><use href="#i-users"/></svg> <span class="nav-text">Clientes</span>
       </a>
       <a class="nav-link" th:href="@{/telas/tecnicos}" th:aria-current="${ativo == 'tecnicos'} ? 'page'" title="Técnicos">
