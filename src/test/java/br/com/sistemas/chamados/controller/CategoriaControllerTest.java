@@ -161,12 +161,12 @@ class CategoriaControllerTest {
         @DisplayName("retorna 404 quando a categoria não existe")
         void retorna404() throws Exception {
             when(categoriaService.buscar(99L))
-                    .thenThrow(new RecursoNaoEncontradoException("Categoria 99 não encontrado"));
+                    .thenThrow(new RecursoNaoEncontradoException("Categoria 99 não encontrada"));
 
             mockMvc.perform(get(URL + "/{id}", 99L))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.status").value(404))
-                    .andExpect(jsonPath("$.erro").value("Categoria 99 não encontrado"));
+                    .andExpect(jsonPath("$.erro").value("Categoria 99 não encontrada"));
         }
 
         @Test
@@ -209,7 +209,7 @@ class CategoriaControllerTest {
         @DisplayName("retorna 404 quando a categoria não existe")
         void retorna404() throws Exception {
             when(categoriaService.atualizar(eq(99L), any(CategoriaRequest.class)))
-                    .thenThrow(new RecursoNaoEncontradoException("Categoria 99 não encontrado"));
+                    .thenThrow(new RecursoNaoEncontradoException("Categoria 99 não encontrada"));
 
             mockMvc.perform(put(URL + "/{id}", 99L).contentType(MediaType.APPLICATION_JSON).content(json(requestValido)))
                     .andExpect(status().isNotFound());
@@ -233,7 +233,7 @@ class CategoriaControllerTest {
         @Test
         @DisplayName("retorna 404 quando a categoria não existe")
         void retorna404() throws Exception {
-            doThrow(new RecursoNaoEncontradoException("Categoria 99 não encontrado"))
+            doThrow(new RecursoNaoEncontradoException("Categoria 99 não encontrada"))
                     .when(categoriaService).excluir(99L);
 
             mockMvc.perform(delete(URL + "/{id}", 99L))

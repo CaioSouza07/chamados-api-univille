@@ -8,6 +8,7 @@ import br.com.sistemas.chamados.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +45,8 @@ public class ClienteController {
     }
 
     @GetMapping("/{id}/chamados")
-    public Page<ChamadoResponse> buscarChamados(@PageableDefault(size = 20, sort = {"dataAbertura"}) Pageable paginacao, @PathVariable Long id) {
-        return chamadoService.listar(paginacao, null, null, id);
+    public Page<ChamadoResponse> buscarChamados(@PageableDefault(size = 20, sort = {"dataAbertura", "id"}, direction = Sort.Direction.DESC) Pageable paginacao, @PathVariable Long id) {
+        return chamadoService.listar(paginacao, null, null, id, null);
     }
 
     @PutMapping("/{id}")

@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record ChamadoStatusRequest(
 
-        @NotNull(message = "status é obrigatório")
+        @NotNull(message = "Status é obrigatório")
         StatusChamado status
 ) {
 }

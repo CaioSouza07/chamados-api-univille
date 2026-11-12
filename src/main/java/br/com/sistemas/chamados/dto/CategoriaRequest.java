@@ -10,7 +10,7 @@ public record CategoriaRequest(
         String nome,
 
         @NotBlank(message = "Descrição é obrigatório")
-        @Size(max = 120, message = "Nome deve ter no máximo 120 caracteres")
+        @Size(max = 120, message = "Descrição deve ter no máximo 120 caracteres")
         String descricao
 ) {
 }

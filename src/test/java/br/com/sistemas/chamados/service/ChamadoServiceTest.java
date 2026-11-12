@@ -14,6 +14,7 @@ import br.com.sistemas.chamados.enums.Perfil;
 import br.com.sistemas.chamados.enums.Prioridade;
 import br.com.sistemas.chamados.enums.StatusChamado;
 import br.com.sistemas.chamados.exception.ChamadoFechadoException;
+import br.com.sistemas.chamados.exception.ParametroInvalidoException;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
 import br.com.sistemas.chamados.repository.ChamadoRepository;
 import br.com.sistemas.chamados.repository.HistoricoStatusRepository;
@@ -30,6 +31,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
@@ -158,11 +160,11 @@ class ChamadoServiceTest {
         void falhaQuandoCategoriaNaoExiste() {
             when(clienteService.buscarEntity(cliente.getId())).thenReturn(cliente);
             when(categoriaService.buscarEntity(categoria.getId()))
-                    .thenThrow(new RecursoNaoEncontradoException("Categoria 20 não encontrado"));
+                    .thenThrow(new RecursoNaoEncontradoException("Categoria 20 não encontrada"));
 
             assertThatThrownBy(() -> chamadoService.criar(requestValido()))
                     .isInstanceOf(RecursoNaoEncontradoException.class)
-                    .hasMessage("Categoria 20 não encontrado");
+                    .hasMessage("Categoria 20 não encontrada");
 
             verify(chamadoRepository, never()).save(any());
             verifyNoInteractions(historicoStatusRepository);
@@ -179,12 +181,12 @@ class ChamadoServiceTest {
         @DisplayName("valida o cliente e repassa todos os filtros ao repository quando clienteId é informado")
         void validaClienteQuandoClienteIdInformado() {
             Chamado chamado = chamadoComStatus(StatusChamado.ABERTO);
-            when(chamadoRepository.findAllOptionalByStatusAndPrioridadeAndClienteId(
-                    StatusChamado.ABERTO, Prioridade.MEDIA, cliente.getId(), paginacao))
+            when(chamadoRepository.pesquisar(
+                    StatusChamado.ABERTO, Prioridade.MEDIA, cliente.getId(), null, paginacao))
                     .thenReturn(new PageImpl<>(List.of(chamado), paginacao, 1));
 
             Page<ChamadoResponse> resultado =
-                    chamadoService.listar(paginacao, StatusChamado.ABERTO, Prioridade.MEDIA, cliente.getId());
+                    chamadoService.listar(paginacao, StatusChamado.ABERTO, Prioridade.MEDIA, cliente.getId(), null);
 
             verify(clienteService).buscarEntity(cliente.getId());
             assertThat(resultado.getTotalElements()).isEqualTo(1);
@@ -196,10 +198,10 @@ class ChamadoServiceTest {
         @Test
         @DisplayName("não consulta o ClienteService quando clienteId é nulo")
         void naoValidaClienteQuandoClienteIdNulo() {
-            when(chamadoRepository.findAllOptionalByStatusAndPrioridadeAndClienteId(null, null, null, paginacao))
+            when(chamadoRepository.pesquisar(null, null, null, null, paginacao))
                     .thenReturn(new PageImpl<>(List.of(), paginacao, 0));
 
-            Page<ChamadoResponse> resultado = chamadoService.listar(paginacao, null, null, null);
+            Page<ChamadoResponse> resultado = chamadoService.listar(paginacao, null, null, null, null);
 
             assertThat(resultado).isEmpty();
             verifyNoInteractions(clienteService);
@@ -211,10 +213,45 @@ class ChamadoServiceTest {
             when(clienteService.buscarEntity(99L))
                     .thenThrow(new RecursoNaoEncontradoException("Cliente 99 não encontrado"));
 
-            assertThatThrownBy(() -> chamadoService.listar(paginacao, null, null, 99L))
+            assertThatThrownBy(() -> chamadoService.listar(paginacao, null, null, 99L, null))
                     .isInstanceOf(RecursoNaoEncontradoException.class);
 
             verifyNoInteractions(chamadoRepository);
+        }
+
+        @Test
+        @DisplayName("repassa o texto de busca ao repository")
+        void repassaBusca() {
+            when(chamadoRepository.pesquisar(null, null, null, "impressora", paginacao))
+                    .thenReturn(new PageImpl<>(List.of(), paginacao, 0));
+
+            chamadoService.listar(paginacao, null, null, null, "impressora");
+
+            verify(chamadoRepository).pesquisar(null, null, null, "impressora", paginacao);
+        }
+
+        @Test
+        @DisplayName("aceita ordenar pelos campos permitidos, inclusive prioridade")
+        void aceitaOrdenacaoPermitida() {
+            Pageable ordenada = PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "prioridade", "dataAbertura", "id"));
+            when(chamadoRepository.pesquisar(null, null, null, null, ordenada))
+                    .thenReturn(new PageImpl<>(List.of(), ordenada, 0));
+
+            chamadoService.listar(ordenada, null, null, null, null);
+
+            verify(chamadoRepository).pesquisar(null, null, null, null, ordenada);
+        }
+
+        @Test
+        @DisplayName("lança ParametroInvalidoException e não consulta o banco quando o campo de ordenação não existe")
+        void rejeitaOrdenacaoPorCampoInexistente() {
+            Pageable invalida = PageRequest.of(0, 20, Sort.by("foo"));
+
+            assertThatThrownBy(() -> chamadoService.listar(invalida, null, null, null, null))
+                    .isInstanceOf(ParametroInvalidoException.class)
+                    .hasMessageContaining("'foo'");
+
+            verifyNoInteractions(chamadoRepository, clienteService);
         }
     }
 
@@ -259,13 +296,15 @@ class ChamadoServiceTest {
     class Atualizar {
 
         @Test
-        @DisplayName("atualiza título, descrição, prioridade e cliente de um chamado aberto")
+        @DisplayName("atualiza título, descrição, prioridade, cliente e categoria de um chamado aberto")
         void atualizaDados() {
             Cliente novoCliente = comId(new Cliente("João", "joao@email.com", null), 11L);
+            Categoria novaCategoria = comId(new Categoria("Rede", "Conexão e VPN"), 21L);
             Chamado chamado = chamadoComStatus(StatusChamado.ABERTO);
-            ChamadoRequest request = new ChamadoRequest("Monitor", "Tela piscando", Prioridade.CRITICA, 11L, categoria.getId());
+            ChamadoRequest request = new ChamadoRequest("Monitor", "Tela piscando", Prioridade.CRITICA, 11L, 21L);
             when(chamadoRepository.findById(ID)).thenReturn(Optional.of(chamado));
             when(clienteService.buscarEntity(11L)).thenReturn(novoCliente);
+            when(categoriaService.buscarEntity(21L)).thenReturn(novaCategoria);
 
             ChamadoResponse response = chamadoService.atualizar(ID, request);
 
@@ -273,9 +312,11 @@ class ChamadoServiceTest {
             assertThat(chamado.getDescricao()).isEqualTo("Tela piscando");
             assertThat(chamado.getPrioridade()).isEqualTo(Prioridade.CRITICA);
             assertThat(chamado.getCliente()).isSameAs(novoCliente);
+            assertThat(chamado.getCategoria()).isSameAs(novaCategoria);
             assertThat(response.titulo()).isEqualTo("Monitor");
             assertThat(response.prioridade()).isEqualTo(Prioridade.CRITICA);
             assertThat(response.cliente().id()).isEqualTo(11L);
+            assertThat(response.categoria().id()).isEqualTo(21L);
             // A entidade é gerenciada pelo JPA (dirty checking), não precisa de save()
             verify(chamadoRepository, never()).save(any());
         }
@@ -314,6 +355,20 @@ class ChamadoServiceTest {
             assertThatThrownBy(() -> chamadoService.atualizar(ID, requestValido()))
                     .isInstanceOf(RecursoNaoEncontradoException.class)
                     .hasMessage("Cliente 10 não encontrado");
+        }
+
+        @Test
+        @DisplayName("propaga RecursoNaoEncontradoException quando a nova categoria não existe")
+        void lancaExcecaoQuandoCategoriaNaoExiste() {
+            Chamado chamado = chamadoComStatus(StatusChamado.ABERTO);
+            when(chamadoRepository.findById(ID)).thenReturn(Optional.of(chamado));
+            when(clienteService.buscarEntity(cliente.getId())).thenReturn(cliente);
+            when(categoriaService.buscarEntity(categoria.getId()))
+                    .thenThrow(new RecursoNaoEncontradoException("Categoria 20 não encontrada"));
+
+            assertThatThrownBy(() -> chamadoService.atualizar(ID, requestValido()))
+                    .isInstanceOf(RecursoNaoEncontradoException.class)
+                    .hasMessage("Categoria 20 não encontrada");
         }
     }
 
@@ -356,7 +411,7 @@ class ChamadoServiceTest {
             Chamado chamado = chamadoComStatus(StatusChamado.ABERTO);
             when(chamadoRepository.findById(ID)).thenReturn(Optional.of(chamado));
             when(tecnicoService.buscarEntity(99L))
-                    .thenThrow(new RecursoNaoEncontradoException("Tecnico 99 não encontrado"));
+                    .thenThrow(new RecursoNaoEncontradoException("Técnico 99 não encontrado"));
 
             assertThatThrownBy(() -> chamadoService.atribuir(ID, new ChamadoAtribuirRequest(99L)))
                     .isInstanceOf(RecursoNaoEncontradoException.class);

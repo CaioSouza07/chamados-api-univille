@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Chamados · Sistema de Chamados</title>
+  <th:block th:replace="~{fragments/layout :: head-assets}"/>
+</head>
+<body>
+
+<th:block th:replace="~{fragments/layout :: icons}"/>
+
+<div class="app">
+
+  <th:block th:replace="~{fragments/layout :: sidebar('chamados')}"/>
+
+  <!-- ================= Conteúdo ================= -->
+  <div class="main">
+
+    <th:block th:replace="~{fragments/layout :: topbar}"/>
+
+    <main class="content" id="tela-chamados"
+          th:data-api="@{/chamados}" th:data-api-clientes="@{/clientes}" th:data-tela="@{/telas/chamados}">
+
+      <section class="page-head page-head-actions">
+        <div>
+          <h1>Chamados</h1>
+          <p>Acompanhe, filtre e abra chamados de atendimento.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-novo" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> Novo chamado
+        </button>
+      </section>
+
+      <section class="card" aria-label="Lista de chamados">
+        <div class="card-head card-head-tabs">
+          <div class="tabs" role="group" aria-label="Filtrar por status" id="abas-status">
+            <button class="tab" type="button" data-status="" aria-pressed="true">Todos</button>
+            <button class="tab" type="button" data-status="ABERTO" aria-pressed="false">Abertos</button>
+            <button class="tab" type="button" data-status="EM_ATENDIMENTO" aria-pressed="false">Em atendimento</button>
+            <button class="tab" type="button" data-status="AGUARDANDO_CLIENTE" aria-pressed="false">Aguardando cliente</button>
+            <button class="tab" type="button" data-status="FECHADO" aria-pressed="false">Fechados</button>
+          </div>
+        </div>
+
+        <div class="card-filters">
+          <div class="search search-sm">
+            <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+            <label class="sr-only" for="filtro-busca">Buscar chamados</label>
+            <input id="filtro-busca" type="search" placeholder="Título ou nome do cliente" autocomplete="off">
+          </div>
+          <label class="sr-only" for="filtro-prioridade">Prioridade</label>
+          <select class="input input-sm" id="filtro-prioridade">
+            <option value="">Todas as prioridades</option>
+            <option value="CRITICA">Crítica</option>
+            <option value="ALTA">Alta</option>
+            <option value="MEDIA">Média</option>
+            <option value="BAIXA">Baixa</option>
+          </select>
+          <label class="sr-only" for="filtro-cliente">Cliente</label>
+          <select class="input input-sm" id="filtro-cliente">
+            <option value="">Todos os clientes</option>
+          </select>
+          <label class="sr-only" for="filtro-ordem">Ordenar por</label>
+          <select class="input input-sm" id="filtro-ordem">
+            <option value="recentes">Mais recentes</option>
+            <option value="antigos">Mais antigos</option>
+            <option value="prioridade">Maior prioridade</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" type="button" id="btn-limpar" hidden>Limpar filtros</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table-chamados">
+            <thead>
+              <tr>
+                <th scope="col">Nº</th>
+                <th scope="col">Chamado</th>
+                <th scope="col" class="hide-sm">Prioridade</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="hide-sm">Técnico</th>
+                <th scope="col" class="hide-sm">Abertura</th>
+              </tr>
+            </thead>
+            <tbody id="lista" aria-live="polite">
+              <tr><td class="empty" colspan="6"><span class="spinner" aria-hidden="true"></span> Carregando chamados…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card-foot" id="paginacao" hidden></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<th:block th:replace="~{fragments/chamado-form :: modal}"/>
+
+<!-- Avisos rápidos (sucesso/erro) -->
+<div class="toast-region" id="toasts" role="status" aria-live="polite"></div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"/>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/ui.js}"></script>
+<script th:src="@{/js/dominio.js}"></script>
+<script th:src="@{/js/chamado-form.js}"></script>
+<script th:src="@{/js/chamados.js}"></script>
+
+</body>
+</html>

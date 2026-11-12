@@ -45,7 +45,7 @@ public class ClienteService {
     public ClienteResponse atualizar(Long id, ClienteRequest dto) {
         Cliente cliente = buscarEntity(id);
         if (clienteRepository.existsByEmailAndIdNot(dto.email(), id)) {
-            throw new RegraNegocioException("Já existe um cliente com o e-mail: " + dto.email());
+            throw new RegraNegocioException("Já existe cliente com o e-mail " + dto.email());
         }
         cliente.setNome(dto.nome());
         cliente.setEmail(dto.email());

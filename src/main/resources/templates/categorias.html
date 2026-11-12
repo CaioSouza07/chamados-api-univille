@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Categorias · Sistema de Chamados</title>
+  <th:block th:replace="~{fragments/layout :: head-assets}"/>
+</head>
+<body>
+
+<th:block th:replace="~{fragments/layout :: icons}"/>
+
+<div class="app">
+
+  <th:block th:replace="~{fragments/layout :: sidebar('categorias')}"/>
+
+  <!-- ================= Conteúdo ================= -->
+  <div class="main">
+
+    <th:block th:replace="~{fragments/layout :: topbar}"/>
+
+    <main class="content" id="tela-categorias" th:data-api="@{/categorias}">
+
+      <section class="page-head page-head-actions">
+        <div>
+          <h1>Categorias</h1>
+          <p>Organize os tipos de chamado atendidos pela central.</p>
+        </div>
+        <button class="btn btn-primary" id="btn-nova" type="button">
+          <svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg> Nova categoria
+        </button>
+      </section>
+
+      <section class="card" aria-labelledby="titulo-lista">
+        <div class="card-head card-head-tools">
+          <h2 id="titulo-lista">Categorias cadastradas</h2>
+          <div class="card-tools">
+            <div class="search search-sm">
+              <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+              <label class="sr-only" for="filtro">Filtrar categorias</label>
+              <input id="filtro" type="search" placeholder="Filtrar por nome ou descrição" autocomplete="off">
+            </div>
+            <span class="count" id="contador" aria-live="polite"></span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col" class="t-col-nome">Nome</th>
+                <th scope="col">Descrição</th>
+                <th scope="col" class="t-actions">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="lista" aria-live="polite">
+              <tr><td class="empty" colspan="3"><span class="spinner" aria-hidden="true"></span> Carregando categorias…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ================= Modal: criar / editar ================= -->
+<dialog class="modal" id="modal-categoria" aria-labelledby="modal-categoria-titulo">
+  <form id="form-categoria">
+    <div class="modal-head">
+      <h2 id="modal-categoria-titulo">Nova categoria</h2>
+      <button class="icon-btn" type="button" data-fechar aria-label="Fechar">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="alert alert-error" id="form-erro" role="alert" hidden></div>
+
+      <div class="field">
+        <label for="nome">Nome</label>
+        <input class="input" id="nome" name="nome" type="text" required maxlength="50"
+               autocomplete="off" placeholder="Ex.: Hardware" aria-describedby="nome-contador">
+        <span class="field-hint"><span>Obrigatório</span><span id="nome-contador" data-contador="nome">0/50</span></span>
+      </div>
+
+      <div class="field">
+        <label for="descricao">Descrição</label>
+        <textarea class="input" id="descricao" name="descricao" rows="3" required maxlength="120"
+                  placeholder="Ex.: Problemas com computadores, impressoras e periféricos"
+                  aria-describedby="descricao-contador"></textarea>
+        <span class="field-hint"><span>Obrigatório</span><span id="descricao-contador" data-contador="descricao">0/120</span></span>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-ghost" type="button" data-fechar>Cancelar</button>
+      <button class="btn btn-primary" type="submit" id="btn-salvar">Salvar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ================= Modal: confirmar exclusão ================= -->
+<dialog class="modal modal-sm" id="modal-excluir" aria-labelledby="modal-excluir-titulo">
+  <div class="modal-head">
+    <h2 id="modal-excluir-titulo">Excluir categoria</h2>
+    <button class="icon-btn" type="button" data-fechar aria-label="Fechar">
+      <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <div class="alert alert-error" id="excluir-erro" role="alert" hidden></div>
+    <p>Tem certeza que deseja excluir a categoria <strong id="excluir-nome"></strong>? Esta ação não pode ser desfeita.</p>
+  </div>
+
+  <div class="modal-foot">
+    <button class="btn btn-ghost" type="button" data-fechar>Cancelar</button>
+    <button class="btn btn-danger" type="button" id="btn-confirmar-exclusao">
+      <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg> Excluir
+    </button>
+  </div>
+</dialog>
+
+<!-- Avisos rápidos (sucesso/erro) -->
+<div class="toast-region" id="toasts" role="status" aria-live="polite"></div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"/>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/ui.js}"></script>
+<script th:src="@{/js/categorias.js}"></script>
+
+</body>
+</html>

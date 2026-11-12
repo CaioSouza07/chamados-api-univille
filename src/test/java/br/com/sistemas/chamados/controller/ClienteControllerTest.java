@@ -229,7 +229,7 @@ class ClienteControllerTest {
             ChamadoResponse chamado = new ChamadoResponse(10L, "Impressora", "Não imprime",
                     LocalDate.of(2026, 1, 10), null, Prioridade.ALTA, StatusChamado.ABERTO,
                     responseEsperado, null, null);
-            when(chamadoService.listar(any(Pageable.class), isNull(), isNull(), eq(ID)))
+            when(chamadoService.listar(any(Pageable.class), isNull(), isNull(), eq(ID), isNull()))
                     .thenReturn(new PageImpl<>(List.of(chamado)));
 
             mockMvc.perform(get(URL + "/{id}/chamados", ID))
@@ -242,13 +242,13 @@ class ClienteControllerTest {
         @Test
         @DisplayName("aplica a paginação padrão: 20 itens ordenados por dataAbertura")
         void aplicaPaginacaoPadrao() throws Exception {
-            when(chamadoService.listar(any(Pageable.class), isNull(), isNull(), eq(ID)))
+            when(chamadoService.listar(any(Pageable.class), isNull(), isNull(), eq(ID), isNull()))
                     .thenReturn(new PageImpl<>(List.of()));
 
             mockMvc.perform(get(URL + "/{id}/chamados", ID)).andExpect(status().isOk());
 
             ArgumentCaptor<Pageable> captor = ArgumentCaptor.forClass(Pageable.class);
-            verify(chamadoService).listar(captor.capture(), isNull(), isNull(), eq(ID));
+            verify(chamadoService).listar(captor.capture(), isNull(), isNull(), eq(ID), isNull());
             assertThat(captor.getValue().getPageSize()).isEqualTo(20);
             assertThat(captor.getValue().getSort().getOrderFor("dataAbertura")).isNotNull();
         }
@@ -256,7 +256,7 @@ class ClienteControllerTest {
         @Test
         @DisplayName("retorna 404 quando o cliente não existe")
         void retorna404() throws Exception {
-            when(chamadoService.listar(any(Pageable.class), isNull(), isNull(), eq(99L)))
+            when(chamadoService.listar(any(Pageable.class), isNull(), isNull(), eq(99L), isNull()))
                     .thenThrow(new RecursoNaoEncontradoException("Cliente 99 não encontrado"));
 
             mockMvc.perform(get(URL + "/{id}/chamados", 99L))

@@ -117,7 +117,7 @@ class CategoriaServiceTest {
 
             assertThatThrownBy(() -> categoriaService.buscar(ID))
                     .isInstanceOf(RecursoNaoEncontradoException.class)
-                    .hasMessage("Categoria 1 não encontrado");
+                    .hasMessage("Categoria 1 não encontrada");
         }
     }
 
@@ -203,7 +203,7 @@ class CategoriaServiceTest {
 
             assertThatThrownBy(() -> categoriaService.buscarEntity(99L))
                     .isInstanceOf(RecursoNaoEncontradoException.class)
-                    .hasMessage("Categoria 99 não encontrado");
+                    .hasMessage("Categoria 99 não encontrada");
         }
     }
 }

@@ -190,12 +190,12 @@ class TecnicoControllerTest {
         @Test
         @DisplayName("retorna 404 quando o técnico não existe")
         void retorna404() throws Exception {
-            when(tecnicoService.buscar(99L)).thenThrow(new RecursoNaoEncontradoException("Tecnico 99 não encontrado"));
+            when(tecnicoService.buscar(99L)).thenThrow(new RecursoNaoEncontradoException("Técnico 99 não encontrado"));
 
             mockMvc.perform(get(URL + "/{id}", 99L))
                     .andExpect(status().isNotFound())
                     .andExpect(jsonPath("$.status").value(404))
-                    .andExpect(jsonPath("$.erro").value("Tecnico 99 não encontrado"));
+                    .andExpect(jsonPath("$.erro").value("Técnico 99 não encontrado"));
         }
 
         @Test
@@ -238,7 +238,7 @@ class TecnicoControllerTest {
         @DisplayName("retorna 404 quando o técnico não existe")
         void retorna404() throws Exception {
             when(tecnicoService.atualizar(eq(99L), any(TecnicoRequest.class)))
-                    .thenThrow(new RecursoNaoEncontradoException("Tecnico 99 não encontrado"));
+                    .thenThrow(new RecursoNaoEncontradoException("Técnico 99 não encontrado"));
 
             mockMvc.perform(put(URL + "/{id}", 99L).contentType(MediaType.APPLICATION_JSON).content(json(requestValido)))
                     .andExpect(status().isNotFound());
@@ -272,7 +272,7 @@ class TecnicoControllerTest {
         @Test
         @DisplayName("retorna 404 quando o técnico não existe")
         void retorna404() throws Exception {
-            doThrow(new RecursoNaoEncontradoException("Tecnico 99 não encontrado"))
+            doThrow(new RecursoNaoEncontradoException("Técnico 99 não encontrado"))
                     .when(tecnicoService).excluir(99L);
 
             mockMvc.perform(delete(URL + "/{id}", 99L))

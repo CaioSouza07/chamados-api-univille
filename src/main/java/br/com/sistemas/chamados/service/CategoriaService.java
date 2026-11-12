@@ -54,6 +54,6 @@ public class CategoriaService {
 
     public Categoria buscarEntity(Long id) {
         return categoriaRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria " + id + " não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Categoria " + id + " não encontrada"));
     }
 }
