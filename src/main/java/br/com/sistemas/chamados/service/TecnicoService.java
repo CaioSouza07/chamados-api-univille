@@ -23,7 +23,7 @@ public class TecnicoService {
     @Transactional
     public TecnicoResponse criar(TecnicoRequest dto) {
         if (tecnicoRepository.existsByEmail(dto.email())) {
-            throw new RegraNegocioException("Já existe tecnico com o e-mail " + dto.email());
+            throw new RegraNegocioException("Já existe técnico com o e-mail " + dto.email());
         }
         Tecnico salvo = tecnicoRepository.save(new Tecnico(dto.nome(), dto.email(), dto.perfil()));
         return TecnicoResponse.de(salvo);
@@ -43,7 +43,7 @@ public class TecnicoService {
     public TecnicoResponse atualizar(Long id, TecnicoRequest dto) {
         Tecnico tecnico = buscarEntity(id);
         if (tecnicoRepository.existsByEmailAndIdNot(dto.email(), id)) {
-            throw new RegraNegocioException("Já existe um tecnico com o e-mail: " + dto.email());
+            throw new RegraNegocioException("Já existe técnico com o e-mail " + dto.email());
         }
         tecnico.setNome(dto.nome());
         tecnico.setEmail(dto.email());
@@ -58,6 +58,6 @@ public class TecnicoService {
 
     public Tecnico buscarEntity(Long id) {
         return tecnicoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Tecnico " + id + " não encontrado"));
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Técnico " + id + " não encontrado"));
     }
 }

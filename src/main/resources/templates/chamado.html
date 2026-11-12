@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${'Chamado #' + chamadoId + ' · Sistema de Chamados'}">Chamado · Sistema de Chamados</title>
+  <th:block th:replace="~{fragments/layout :: head-assets}"/>
+</head>
+<body>
+
+<th:block th:replace="~{fragments/layout :: icons}"/>
+
+<div class="app">
+
+  <th:block th:replace="~{fragments/layout :: sidebar('chamados')}"/>
+
+  <!-- ================= Conteúdo ================= -->
+  <div class="main">
+
+    <th:block th:replace="~{fragments/layout :: topbar}"/>
+
+    <main class="content" id="tela-chamado" th:data-id="${chamadoId}"
+          th:data-api="@{/chamados}" th:data-api-tecnicos="@{/tecnicos}"
+          th:data-tela="@{/telas/chamados}" th:data-tela-clientes="@{/telas/clientes}">
+
+      <a class="back-link" th:href="@{/telas/chamados}">
+        <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"/></svg> Chamados
+      </a>
+
+      <!-- Carregando / não encontrado / erro -->
+      <section class="card" id="estado">
+        <p class="empty"><span class="spinner" aria-hidden="true"></span> Carregando chamado…</p>
+      </section>
+
+      <div class="detail" id="detalhe" hidden>
+
+        <section class="page-head page-head-actions">
+          <div>
+            <p class="detail-kicker"><span id="d-numero"></span> · aberto em <span id="d-abertura"></span></p>
+            <h1 id="d-titulo"></h1>
+            <div class="badges" id="d-badges"></div>
+          </div>
+          <div class="head-actions">
+            <button class="btn btn-ghost" type="button" id="btn-editar">
+              <svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg> Editar
+            </button>
+            <button class="btn btn-danger-ghost" type="button" id="btn-excluir">
+              <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg> Excluir
+            </button>
+          </div>
+        </section>
+
+        <div class="alert alert-info" id="aviso-fechado" role="status" hidden>
+          <svg class="icon" aria-hidden="true"><use href="#i-check"/></svg>
+          <div><strong id="aviso-fechado-titulo">Chamado fechado.</strong> Para editar, comentar ou trocar o técnico, reabra o chamado.</div>
+        </div>
+
+        <div class="grid">
+
+          <!-- Coluna principal -->
+          <div class="main-col">
+            <section class="card" aria-labelledby="titulo-descricao">
+              <div class="card-head"><h2 id="titulo-descricao">Descrição</h2></div>
+              <p class="panel-body descricao" id="d-descricao"></p>
+            </section>
+
+            <section class="card" aria-labelledby="titulo-comentarios">
+              <div class="card-head">
+                <h2 id="titulo-comentarios">Comentários</h2>
+                <span class="count" id="d-total-comentarios"></span>
+              </div>
+              <ul class="comments" id="d-comentarios" aria-live="polite"></ul>
+
+              <form class="comment-form" id="form-comentario">
+                <div class="alert alert-error" id="comentario-erro" role="alert" hidden></div>
+                <div class="field">
+                  <label for="comentario-autor">Comentar como</label>
+                  <select class="input" id="comentario-autor" required></select>
+                </div>
+                <div class="field">
+                  <label class="sr-only" for="comentario-texto">Comentário</label>
+                  <textarea class="input" id="comentario-texto" rows="3" required maxlength="500"
+                            placeholder="Escreva uma atualização, pergunta ou resposta…" aria-describedby="comentario-contador"></textarea>
+                  <span class="field-hint"><span>Ctrl + Enter para enviar</span><span id="comentario-contador" data-contador="comentario-texto">0/500</span></span>
+                </div>
+                <div class="comment-form-actions">
+                  <button class="btn btn-primary" type="submit" id="btn-comentar">
+                    <svg class="icon" aria-hidden="true"><use href="#i-message"/></svg> Enviar comentário
+                  </button>
+                </div>
+              </form>
+              <p class="comment-closed" id="comentarios-fechados" hidden>Comentários desativados: o chamado está fechado.</p>
+            </section>
+          </div>
+
+          <!-- Coluna lateral -->
+          <div class="side">
+            <section class="card" aria-labelledby="titulo-atendimento">
+              <div class="card-head"><h2 id="titulo-atendimento">Atendimento</h2></div>
+              <div class="panel-body side-block">
+                <div class="side-group">
+                  <span class="side-label">Mudar status</span>
+                  <div class="status-actions" id="d-acoes-status"></div>
+                </div>
+                <div class="side-group">
+                  <label class="side-label" for="d-tecnico">Técnico responsável</label>
+                  <div class="assign-row">
+                    <select class="input input-sm" id="d-tecnico"></select>
+                    <button class="btn btn-ghost btn-sm" type="button" id="btn-atribuir">
+                      <svg class="icon" aria-hidden="true"><use href="#i-user-check"/></svg> Atribuir
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" aria-labelledby="titulo-dados">
+              <div class="card-head"><h2 id="titulo-dados">Dados do chamado</h2></div>
+              <dl class="panel-body info-list" id="d-dados"></dl>
+            </section>
+
+            <section class="card" aria-labelledby="titulo-historico">
+              <div class="card-head"><h2 id="titulo-historico">Histórico</h2></div>
+              <ul class="panel-body activity" id="d-historico"></ul>
+            </section>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<th:block th:replace="~{fragments/chamado-form :: modal}"/>
+
+<!-- ================= Modal: confirmar exclusão ================= -->
+<dialog class="modal modal-sm" id="modal-excluir" aria-labelledby="modal-excluir-titulo">
+  <div class="modal-head">
+    <h2 id="modal-excluir-titulo">Excluir chamado</h2>
+    <button class="icon-btn" type="button" data-fechar aria-label="Fechar">
+      <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+    </button>
+  </div>
+
+  <div class="modal-body">
+    <div class="alert alert-error" id="excluir-erro" role="alert" hidden></div>
+    <p>Tem certeza que deseja excluir o chamado <strong id="excluir-nome"></strong>?
+      Os comentários e o histórico também serão apagados. Esta ação não pode ser desfeita.</p>
+  </div>
+
+  <div class="modal-foot">
+    <button class="btn btn-ghost" type="button" data-fechar>Cancelar</button>
+    <button class="btn btn-danger" type="button" id="btn-confirmar-exclusao">
+      <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg> Excluir
+    </button>
+  </div>
+</dialog>
+
+<!-- Avisos rápidos (sucesso/erro) -->
+<div class="toast-region" id="toasts" role="status" aria-live="polite"></div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"/>
+<script th:src="@{/js/api.js}"></script>
+<script th:src="@{/js/ui.js}"></script>
+<script th:src="@{/js/dominio.js}"></script>
+<script th:src="@{/js/chamado-form.js}"></script>
+<script th:src="@{/js/chamado.js}"></script>
+
+</body>
+</html>

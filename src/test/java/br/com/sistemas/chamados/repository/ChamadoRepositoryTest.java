@@ -55,7 +55,7 @@ class ChamadoRepositoryTest {
     }
 
     @Nested
-    @DisplayName("findAllOptionalByStatusAndPrioridadeAndClienteId")
+    @DisplayName("pesquisar")
     class FindAllOptional {
 
         @BeforeEach
@@ -68,7 +68,7 @@ class ChamadoRepositoryTest {
         }
 
         private Page<Chamado> buscar(StatusChamado status, Prioridade prioridade, Long clienteId) {
-            return chamadoRepository.findAllOptionalByStatusAndPrioridadeAndClienteId(status, prioridade, clienteId, PAGINA);
+            return chamadoRepository.pesquisar(status, prioridade, clienteId, null, PAGINA);
         }
 
         @Test
@@ -126,13 +126,75 @@ class ChamadoRepositoryTest {
             Pageable segundaPagina = PageRequest.of(1, 3, Sort.by(Sort.Direction.DESC, "titulo"));
 
             Page<Chamado> pagina = chamadoRepository
-                    .findAllOptionalByStatusAndPrioridadeAndClienteId(null, null, null, segundaPagina);
+                    .pesquisar(null, null, null, null, segundaPagina);
 
             assertThat(pagina.getTotalElements()).isEqualTo(4);
             assertThat(pagina.getTotalPages()).isEqualTo(2);
             assertThat(pagina.getContent())
                     .extracting(Chamado::getTitulo)
                     .containsExactly("A - Impressora");
+        }
+
+        @Test
+        @DisplayName("busca no título sem diferenciar maiúsculas")
+        void buscaNoTitulo() {
+            assertThat(chamadoRepository.pesquisar(null, null, null, "MONITOR", PAGINA).getContent())
+                    .extracting(Chamado::getTitulo)
+                    .containsExactly("B - Monitor");
+        }
+
+        @Test
+        @DisplayName("busca no nome do cliente e combina com os demais filtros")
+        void buscaNoNomeDoClienteECombinaFiltros() {
+            assertThat(chamadoRepository.pesquisar(null, null, null, "joão", PAGINA).getContent())
+                    .extracting(Chamado::getTitulo)
+                    .containsExactly("B - Monitor", "D - Mouse");
+
+            assertThat(chamadoRepository.pesquisar(null, Prioridade.MEDIA, null, "joão", PAGINA).getContent())
+                    .extracting(Chamado::getTitulo)
+                    .containsExactly("D - Mouse");
+        }
+
+        @Test
+        @DisplayName("busca em branco é ignorada")
+        void buscaEmBrancoIgnorada() {
+            assertThat(chamadoRepository.pesquisar(null, null, null, "   ", PAGINA).getTotalElements()).isEqualTo(4);
+        }
+
+        @Test
+        @DisplayName("curingas digitados na busca (% e _) são tratados como texto literal")
+        void curingasSaoLiterais() {
+            persistir("E - Disco 100% cheio", Prioridade.BAIXA, StatusChamado.ABERTO, maria);
+
+            assertThat(chamadoRepository.pesquisar(null, null, null, "%", PAGINA).getContent())
+                    .extracting(Chamado::getTitulo)
+                    .containsExactly("E - Disco 100% cheio");
+            assertThat(chamadoRepository.pesquisar(null, null, null, "_", PAGINA).getContent()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("ordena prioridade por gravidade (CRITICA > ALTA > MEDIA > BAIXA), não alfabeticamente")
+        void ordenaPrioridadePorGravidade() {
+            persistir("E - Servidor fora do ar", Prioridade.CRITICA, StatusChamado.ABERTO, maria);
+            Pageable porGravidade = PageRequest.of(0, 20,
+                    Sort.by(Sort.Order.desc("prioridade"), Sort.Order.asc("titulo")));
+
+            assertThat(chamadoRepository.pesquisar(null, null, null, null, porGravidade).getContent())
+                    .extracting(Chamado::getPrioridade)
+                    .containsExactly(Prioridade.CRITICA, Prioridade.ALTA, Prioridade.ALTA, Prioridade.MEDIA, Prioridade.BAIXA);
+        }
+
+        @Test
+        @DisplayName("ordena prioridade crescente com paginação e contagem corretas")
+        void ordenaPrioridadeCrescenteComPaginacao() {
+            Pageable pagina = PageRequest.of(0, 2, Sort.by(Sort.Order.asc("prioridade"), Sort.Order.asc("titulo")));
+
+            Page<Chamado> resultado = chamadoRepository.pesquisar(null, null, null, null, pagina);
+
+            assertThat(resultado.getTotalElements()).isEqualTo(4);
+            assertThat(resultado.getContent())
+                    .extracting(Chamado::getTitulo)
+                    .containsExactly("B - Monitor", "D - Mouse");
         }
     }
 

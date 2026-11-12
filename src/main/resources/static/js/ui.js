@@ -16,6 +16,14 @@
  *                                 -> botão pequeno das ações da tabela (vira só ícone no celular)
  *   ui.bindCounters(form)         -> liga os contadores [data-contador="idDoCampo"]; devolve a
  *                                    função para atualizá-los (ex.: depois de preencher o form)
+ *
+ * Paginação (respostas Page da API):
+ *   ui.pageInfo(resposta)         -> { number, size, totalElements, totalPages } (aceita o formato
+ *                                    { page: {...} } e o antigo, com os campos na raiz)
+ *   ui.pagination(el, info, irPara) -> "Mostrando 1–20 de 57" + botões Anterior/Próxima
+ *
+ * Aviso que sobrevive a uma troca de página (ex.: excluiu e voltou para a lista):
+ *   ui.toastAfterNavigation('Chamado excluído.')
  */
 (function () {
   const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -169,5 +177,73 @@
     return atualizar;
   }
 
-  window.ui = { icon, toast, showError, hideError, modal, normalize, tableMessage, actionButton, bindCounters };
+  function pageInfo(resposta) {
+    const meta = resposta.page || resposta;
+    const itens = (resposta.content || []).length;
+    return {
+      number: meta.number ?? 0,
+      size: meta.size ?? itens,
+      totalElements: meta.totalElements ?? itens,
+      totalPages: meta.totalPages ?? 1,
+    };
+  }
+
+  function pagination(el, info, irPara) {
+    el.replaceChildren();
+    if (info.totalElements === 0) {
+      el.hidden = true;
+      return;
+    }
+    el.hidden = false;
+
+    const inicio = info.number * info.size + 1;
+    const fim = Math.min(inicio + info.size - 1, info.totalElements);
+    const resumo = document.createElement('span');
+    resumo.className = 'count';
+    resumo.textContent = 'Mostrando ' + inicio + '–' + fim + ' de ' + info.totalElements;
+
+    const nav = document.createElement('div');
+    nav.className = 'pagination';
+    const botao = (texto, iconId, destino, desabilitado, iconeDepois) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn btn-ghost btn-sm';
+      b.disabled = desabilitado;
+      const label = document.createElement('span');
+      label.textContent = texto;
+      if (iconeDepois) b.append(label, icon(iconId)); else b.append(icon(iconId), label);
+      b.addEventListener('click', () => irPara(destino));
+      return b;
+    };
+    const pagina = document.createElement('span');
+    pagina.className = 'pagination-page';
+    pagina.textContent = (info.number + 1) + ' de ' + Math.max(info.totalPages, 1);
+    nav.append(
+      botao('Anterior', 'i-chevron-left', info.number - 1, info.number === 0, false),
+      pagina,
+      botao('Próxima', 'i-chevron-right', info.number + 1, info.number + 1 >= info.totalPages, true)
+    );
+
+    el.append(resumo, nav);
+  }
+
+  const CHAVE_TOAST = 'toastPendente';
+
+  function toastAfterNavigation(message, type) {
+    try { sessionStorage.setItem(CHAVE_TOAST, JSON.stringify({ message, type })); } catch (e) {}
+  }
+
+  // Mostra o aviso deixado pela página anterior (se houver).
+  try {
+    const pendente = JSON.parse(sessionStorage.getItem(CHAVE_TOAST) || 'null');
+    if (pendente) {
+      sessionStorage.removeItem(CHAVE_TOAST);
+      document.addEventListener('DOMContentLoaded', () => toast(pendente.message, pendente.type));
+    }
+  } catch (e) {}
+
+  window.ui = {
+    icon, toast, showError, hideError, modal, normalize, tableMessage, actionButton, bindCounters,
+    pageInfo, pagination, toastAfterNavigation,
+  };
 })();

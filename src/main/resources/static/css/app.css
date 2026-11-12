@@ -476,6 +476,8 @@ ul { margin: 0; padding: 0; list-style: none; }
 }
 
 .side { display: grid; gap: 20px; }
+/* Conteúdo largo (ex.: select com nome longo) encolhe dentro da coluna em vez de alargá-la */
+.side > * { min-width: 0; }
 
 /* ---------- Tabela ---------- */
 
@@ -849,6 +851,248 @@ select.input {
   from { opacity: 0; transform: translateY(8px); }
 }
 
+/* ==========================================================================
+   Chamados (lista e detalhe)
+   ========================================================================== */
+
+/* ---------- Tabelas com linhas clicáveis ---------- */
+
+.t-link { color: inherit; }
+.t-link:hover { color: var(--dusk-600); text-decoration: underline; }
+
+tr.row-link { cursor: pointer; }
+
+.table-wrap { transition: opacity 0.15s; }
+.table-wrap.is-loading { opacity: 0.55; pointer-events: none; }
+
+/* ---------- Abas de status ---------- */
+
+.card-head-tabs { padding-block: 12px; }
+
+.tabs {
+  display: inline-flex;
+  gap: 4px;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--dusk-50);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tab {
+  flex: none;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab:hover { color: var(--text); background: var(--dusk-100); }
+.tab[aria-pressed="true"] { background: var(--surface); color: var(--dusk-700); box-shadow: var(--shadow); }
+
+/* ---------- Filtros e rodapé do card ---------- */
+
+.card-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.pagination { display: flex; align-items: center; gap: 10px; }
+.pagination-page { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- Formulário de chamado ---------- */
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+select.input:disabled { background-color: var(--bg); color: var(--text-muted); cursor: not-allowed; }
+
+.choice-group-4 { grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.choice-group-4 .choice-body { padding: 10px 10px 10px 34px; }
+.choice-group-4 .choice-body::before { left: 11px; top: 12px; }
+
+/* Cada prioridade usa a própria cor quando escolhida */
+.choice-prio-critica { --prio-fg: var(--crit-fg); --prio-bg: var(--crit-bg); }
+.choice-prio-alta { --prio-fg: var(--alta-fg); --prio-bg: var(--alta-bg); }
+.choice-prio-media { --prio-fg: var(--media-fg); --prio-bg: var(--media-bg); }
+.choice-prio-baixa { --prio-fg: var(--dusk-600); --prio-bg: var(--dusk-50); }
+
+.choice-prio .choice-body strong { color: var(--prio-fg); }
+
+.choice-prio input:checked + .choice-body {
+  border-color: var(--prio-fg);
+  background: var(--prio-bg);
+  box-shadow: 0 0 0 1px var(--prio-fg);
+}
+
+.choice-prio input:checked + .choice-body::before { border-color: var(--prio-fg); background: var(--prio-fg); }
+
+/* ---------- Detalhe ---------- */
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  margin-bottom: -12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dusk-600);
+}
+
+.back-link:hover { color: var(--dusk-800); }
+
+.detail { display: grid; gap: 20px; min-width: 0; }
+
+.detail-kicker {
+  margin-bottom: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.detail .page-head h1 { overflow-wrap: anywhere; }
+.detail .page-head-actions { align-items: flex-start; }
+
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+.prio-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.prio-tag-critica { background: var(--crit-bg); color: var(--crit-fg); }
+.prio-tag-alta { background: var(--alta-bg); color: var(--alta-fg); }
+.prio-tag-media { background: var(--media-bg); color: var(--media-fg); }
+.prio-tag-baixa { background: var(--dusk-50); color: var(--dusk-700); }
+
+.head-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.alert-info { background: var(--dusk-50); color: var(--dusk-800); border: 1px solid var(--dusk-100); }
+.alert-info .icon { color: var(--ok-fg); }
+
+.main-col { display: grid; gap: 20px; min-width: 0; align-content: start; }
+
+.descricao { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Comentários */
+.comments > li.empty { padding: 28px 20px; }
+
+.comment {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.comment:first-child { border-top: 0; }
+
+.comment-avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--dusk-100);
+  color: var(--dusk-700);
+}
+
+.comment-tecnico .comment-avatar { background: var(--dusk-600); color: #fff; }
+
+.comment-body { min-width: 0; flex: 1; }
+
+.comment-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.comment-head time { margin-left: auto; font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+
+.comment-role {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--dusk-50);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.comment-tecnico .comment-role { background: var(--dusk-100); color: var(--dusk-700); }
+
+.comment-text { margin-top: 4px; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.comment-form {
+  display: grid;
+  gap: 12px;
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.comment-form-actions { display: flex; justify-content: flex-end; }
+
+.comment-closed {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Coluna lateral */
+.side-block { display: grid; gap: 18px; }
+.side-block > * { min-width: 0; }
+.side-group { display: grid; gap: 8px; }
+
+.side-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.status-actions { display: grid; gap: 8px; }
+.status-actions .btn { width: 100%; }
+
+.assign-row { display: flex; gap: 8px; }
+.assign-row .input-sm { flex: 1; min-width: 0; width: 0; } /* width 0 + flex 1 = ocupa o que sobrar, sem impor a largura do nome mais longo */
+
+.is-busy .status-actions,
+.is-busy .assign-row { opacity: 0.6; pointer-events: none; }
+
+.info-list { display: grid; gap: 14px; margin: 0; }
+.info-list dt { font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+.info-list dd { display: grid; gap: 2px; margin: 4px 0 0; overflow-wrap: anywhere; }
+.info-list dd .link { margin-top: 4px; font-size: 13px; }
+
+.modal-foot-actions { display: flex; gap: 10px; }
+
 /* ---------- Responsivo ---------- */
 
 @media (max-width: 1100px) {
@@ -916,4 +1160,19 @@ select.input {
 
   .toast-region { left: 16px; right: 16px; bottom: 16px; justify-items: stretch; }
   .toast { max-width: none; }
+
+  /* Chamados */
+  .tabs { display: flex; }
+  .card-filters { padding: 12px 16px; }
+  .card-filters .search-sm,
+  .card-filters .input-sm { flex: 1 1 100%; }
+  .card-filters .search-sm { order: -1; }
+  .card-foot { padding: 12px 16px; justify-content: center; }
+  .choice-group-4 { grid-template-columns: 1fr 1fr; }
+  .field-row { grid-template-columns: 1fr; }
+  .head-actions { width: 100%; }
+  .page-head-actions .head-actions .btn { width: auto; flex: 1; }
+  .comment { padding: 14px 16px; }
+  .comment-form { padding: 14px 16px 16px; }
+  .modal-foot-actions { flex: 1; }
 }

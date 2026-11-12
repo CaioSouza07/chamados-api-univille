@@ -13,6 +13,7 @@ import br.com.sistemas.chamados.enums.StatusChamado;
 import br.com.sistemas.chamados.enums.TipoAutor;
 import br.com.sistemas.chamados.exception.ChamadoFechadoException;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
+import br.com.sistemas.chamados.exception.RegraNegocioException;
 import br.com.sistemas.chamados.repository.ComentarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -198,16 +199,32 @@ class ComentarioServiceTest {
         }
 
         @Test
+        @DisplayName("lança RegraNegocioException e não salva quando o cliente autor não é o dono do chamado")
+        void lancaExcecaoQuandoClienteNaoEDonoDoChamado() {
+            Cliente outroCliente = comId(new Cliente("João", "joao@email.com", null), 11L);
+            when(chamadoService.buscarEntity(CHAMADO_ID)).thenReturn(chamado);
+            when(clienteService.buscarEntity(11L)).thenReturn(outroCliente);
+
+            assertThatThrownBy(() ->
+                    comentarioService.criar(CHAMADO_ID, new ComentarioRequest(TEXTO, TipoAutor.CLIENTE, 11L)))
+                    .isInstanceOf(RegraNegocioException.class)
+                    .hasMessageContaining("cliente que abriu o chamado");
+
+            verify(comentarioRepository, never()).save(any());
+            assertThat(chamado.getComentarios()).isEmpty();
+        }
+
+        @Test
         @DisplayName("propaga RecursoNaoEncontradoException e não salva quando o técnico autor não existe")
         void lancaExcecaoQuandoTecnicoAutorNaoExiste() {
             when(chamadoService.buscarEntity(CHAMADO_ID)).thenReturn(chamado);
             when(tecnicoService.buscarEntity(99L))
-                    .thenThrow(new RecursoNaoEncontradoException("Tecnico 99 não encontrado"));
+                    .thenThrow(new RecursoNaoEncontradoException("Técnico 99 não encontrado"));
 
             assertThatThrownBy(() ->
                     comentarioService.criar(CHAMADO_ID, new ComentarioRequest(TEXTO, TipoAutor.TECNICO, 99L)))
                     .isInstanceOf(RecursoNaoEncontradoException.class)
-                    .hasMessage("Tecnico 99 não encontrado");
+                    .hasMessage("Técnico 99 não encontrado");
 
             verify(comentarioRepository, never()).save(any());
             assertThat(chamado.getComentarios()).isEmpty();

@@ -42,7 +42,37 @@ class HomeControllerTest {
                 .andExpect(view().name("index"))
                 .andExpect(content().string(containsString("Painel de chamados")))
                 .andExpect(content().string(containsString("id=\"sidebar\"")))
-                .andExpect(content().string(containsString("/js/layout.js")));
+                .andExpect(content().string(containsString("/js/layout.js")))
+                // Topo: busca e "Novo chamado" levam à tela de chamados
+                .andExpect(content().string(containsString("action=\"/telas/chamados\"")))
+                .andExpect(content().string(containsString("href=\"/telas/chamados?novo=1\"")));
+    }
+
+    @Test
+    @DisplayName("GET /telas/chamados renderiza a lista de chamados com o modal de criação")
+    void chamados() throws Exception {
+        mockMvc.perform(get("/telas/chamados"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("chamados"))
+                .andExpect(content().string(containsString("<h1>Chamados</h1>")))
+                .andExpect(content().string(containsString("data-api=\"/chamados\"")))
+                .andExpect(content().string(containsString("href=\"/telas/chamados\" aria-current=\"page\"")))
+                .andExpect(content().string(containsString("id=\"modal-chamado\"")))
+                .andExpect(content().string(containsString("/js/chamado-form.js")))
+                .andExpect(content().string(containsString("/js/chamados.js")));
+    }
+
+    @Test
+    @DisplayName("GET /telas/chamados/{id} renderiza o detalhe com o id do chamado")
+    void chamado() throws Exception {
+        mockMvc.perform(get("/telas/chamados/{id}", 42))
+                .andExpect(status().isOk())
+                .andExpect(view().name("chamado"))
+                .andExpect(content().string(containsString("<title>Chamado #42 · Sistema de Chamados</title>")))
+                .andExpect(content().string(containsString("data-id=\"42\"")))
+                .andExpect(content().string(containsString("href=\"/telas/chamados\" aria-current=\"page\"")))
+                .andExpect(content().string(containsString("id=\"modal-chamado\"")))
+                .andExpect(content().string(containsString("/js/chamado.js")));
     }
 
     @Test

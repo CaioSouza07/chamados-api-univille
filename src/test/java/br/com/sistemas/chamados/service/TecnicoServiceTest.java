@@ -135,7 +135,7 @@ class TecnicoServiceTest {
 
             assertThatThrownBy(() -> tecnicoService.buscar(ID))
                     .isInstanceOf(RecursoNaoEncontradoException.class)
-                    .hasMessage("Tecnico 1 não encontrado");
+                    .hasMessage("Técnico 1 não encontrado");
         }
     }
 
@@ -238,7 +238,7 @@ class TecnicoServiceTest {
 
             assertThatThrownBy(() -> tecnicoService.buscarEntity(99L))
                     .isInstanceOf(RecursoNaoEncontradoException.class)
-                    .hasMessage("Tecnico 99 não encontrado");
+                    .hasMessage("Técnico 99 não encontrado");
         }
     }
 }

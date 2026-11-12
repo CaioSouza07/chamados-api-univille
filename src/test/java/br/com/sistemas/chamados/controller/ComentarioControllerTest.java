@@ -82,9 +82,9 @@ class ComentarioControllerTest {
                     .andExpect(jsonPath("$.status").value(400))
                     .andExpect(jsonPath("$.erro").value("Dados inválidos"))
                     .andExpect(jsonPath("$.detalhes", hasItems(
-                            "texto: texto é obrigatório",
-                            "tipoAutor: tipoAutor é obrigatório",
-                            "autorId: autorId é obrigatório")));
+                            "texto: Texto é obrigatório",
+                            "tipoAutor: Tipo do autor é obrigatório",
+                            "autorId: Autor é obrigatório")));
 
             verifyNoInteractions(comentarioService);
         }
@@ -96,7 +96,7 @@ class ComentarioControllerTest {
 
             mockMvc.perform(post(URL, CHAMADO_ID).contentType(MediaType.APPLICATION_JSON).content(body))
                     .andExpect(status().isBadRequest())
-                    .andExpect(jsonPath("$.detalhes[0]").value("texto: texto deve ter no máximo 500 caracteres"));
+                    .andExpect(jsonPath("$.detalhes[0]").value("texto: Texto deve ter no máximo 500 caracteres"));
 
             verifyNoInteractions(comentarioService);
         }
@@ -124,13 +124,13 @@ class ComentarioControllerTest {
         }
 
         @Test
-        @DisplayName("retorna 400 quando o chamado está fechado")
-        void retorna400QuandoChamadoFechado() throws Exception {
+        @DisplayName("retorna 409 quando o chamado está fechado")
+        void retorna409QuandoChamadoFechado() throws Exception {
             when(comentarioService.criar(eq(CHAMADO_ID), any(ComentarioRequest.class)))
                     .thenThrow(new ChamadoFechadoException("Chamado está fechado, não é possível adicionar comentários"));
 
             mockMvc.perform(post(URL, CHAMADO_ID).contentType(MediaType.APPLICATION_JSON).content(json(requestValido)))
-                    .andExpect(status().isBadRequest())
+                    .andExpect(status().isConflict())
                     .andExpect(jsonPath("$.erro").value("Chamado está fechado, não é possível adicionar comentários"));
         }
 

@@ -18,7 +18,7 @@
 
     <th:block th:replace="~{fragments/layout :: topbar}"/>
 
-    <main class="content" id="tela-clientes" th:data-api="@{/clientes}">
+    <main class="content" id="tela-clientes" th:data-api="@{/clientes}" th:data-tela-chamados="@{/telas/chamados}">
 
       <section class="page-head page-head-actions">
         <div>
@@ -122,7 +122,10 @@
 
   <div class="modal-foot modal-foot-between">
     <span class="count" id="chamados-total"></span>
-    <button class="btn btn-ghost" type="button" data-fechar>Fechar</button>
+    <div class="modal-foot-actions">
+      <a class="btn btn-ghost" id="chamados-ver-todos" href="#" hidden>Ver todos na lista</a>
+      <button class="btn btn-ghost" type="button" data-fechar>Fechar</button>
+    </div>
   </div>
 </dialog>
 

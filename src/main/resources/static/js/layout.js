@@ -57,3 +57,15 @@
 
   sync();
 })();
+
+/*
+ * Linhas de tabela clicáveis: <tr class="row-link" data-href="...">. Dentro da linha deve haver um
+ * link de verdade (para teclado, leitores de tela e "abrir em nova aba"); o clique no resto da linha
+ * só é um atalho para ele.
+ */
+document.addEventListener('click', function (e) {
+  var tr = e.target.closest && e.target.closest('tr.row-link[data-href]');
+  if (!tr || e.target.closest('a, button, input, select, textarea, label')) return;
+  if (window.getSelection && String(window.getSelection())) return; // estava selecionando texto
+  window.location.href = tr.getAttribute('data-href');
+});

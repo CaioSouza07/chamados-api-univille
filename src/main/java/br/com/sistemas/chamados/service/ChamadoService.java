@@ -12,18 +12,24 @@ import br.com.sistemas.chamados.entity.HistoricoStatus;
 import br.com.sistemas.chamados.enums.Prioridade;
 import br.com.sistemas.chamados.enums.StatusChamado;
 import br.com.sistemas.chamados.exception.ChamadoFechadoException;
+import br.com.sistemas.chamados.exception.ParametroInvalidoException;
 import br.com.sistemas.chamados.exception.RecursoNaoEncontradoException;
 import br.com.sistemas.chamados.repository.ChamadoRepository;
 import br.com.sistemas.chamados.repository.HistoricoStatusRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class ChamadoService {
+
+    /** Campos aceitos em ?sort= na listagem. "prioridade" é ordenada por gravidade (ver ChamadoRepository). */
+    static final List<String> CAMPOS_ORDENAVEIS = List.of("id", "titulo", "dataAbertura", "dataFechamento", "prioridade", "status");
 
     private final ChamadoRepository chamadoRepository;
     private final ClienteService clienteService;
@@ -49,11 +55,22 @@ public class ChamadoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ChamadoResponse> listar(Pageable paginacao, StatusChamado status, Prioridade prioridade, Long clienteId) {
+    public Page<ChamadoResponse> listar(Pageable paginacao, StatusChamado status, Prioridade prioridade, Long clienteId, String busca) {
+        validarOrdenacao(paginacao);
         if (clienteId != null) {
             clienteService.buscarEntity(clienteId);
         }
-        return chamadoRepository.findAllOptionalByStatusAndPrioridadeAndClienteId(status, prioridade, clienteId, paginacao).map(ChamadoResponse::de);
+        return chamadoRepository.pesquisar(status, prioridade, clienteId, busca, paginacao).map(ChamadoResponse::de);
+    }
+
+    // Sem isso, um ?sort=campoInexistente estoura como erro 500 na consulta.
+    private static void validarOrdenacao(Pageable paginacao) {
+        for (Sort.Order order : paginacao.getSort()) {
+            if (!CAMPOS_ORDENAVEIS.contains(order.getProperty())) {
+                throw new ParametroInvalidoException("Não é possível ordenar por '" + order.getProperty()
+                        + "'. Campos aceitos: " + String.join(", ", CAMPOS_ORDENAVEIS));
+            }
+        }
     }
 
     @Transactional(readOnly = true)
@@ -72,6 +89,7 @@ public class ChamadoService {
         chamado.setDescricao(dto.descricao());
         chamado.setPrioridade(dto.prioridade());
         chamado.setCliente(clienteService.buscarEntity(dto.clienteId()));
+        chamado.setCategoria(categoriaService.buscarEntity(dto.categoriaId()));
         return ChamadoResponse.de(chamado);
     }
 

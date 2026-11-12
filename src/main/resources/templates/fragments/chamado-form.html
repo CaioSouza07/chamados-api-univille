@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Modal de criar/editar chamado, usado pela lista (/telas/chamados) e pelo detalhe (/telas/chamados/{id}).
+  Precisa de /js/chamado-form.js. Uso: <th:block th:replace="~{fragments/chamado-form :: modal}"/>
+-->
+<dialog th:fragment="modal" class="modal" id="modal-chamado" aria-labelledby="modal-chamado-titulo"
+        th:data-api-chamados="@{/chamados}" th:data-api-clientes="@{/clientes}" th:data-api-categorias="@{/categorias}"
+        th:data-tela-clientes="@{/telas/clientes}" th:data-tela-categorias="@{/telas/categorias}">
+  <form id="form-chamado">
+    <div class="modal-head">
+      <h2 id="modal-chamado-titulo">Novo chamado</h2>
+      <button class="icon-btn" type="button" data-fechar aria-label="Fechar">
+        <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="alert alert-error" id="chamado-form-erro" role="alert" hidden></div>
+
+      <div class="field">
+        <label for="chamado-titulo">Título</label>
+        <input class="input" id="chamado-titulo" name="titulo" type="text" required maxlength="100"
+               autocomplete="off" placeholder="Ex.: Impressora do financeiro não imprime" aria-describedby="chamado-titulo-contador">
+        <span class="field-hint"><span>Resumo curto do problema</span><span id="chamado-titulo-contador" data-contador="chamado-titulo">0/100</span></span>
+      </div>
+
+      <div class="field">
+        <label for="chamado-descricao">Descrição</label>
+        <textarea class="input" id="chamado-descricao" name="descricao" rows="3" required maxlength="254"
+                  placeholder="O que aconteceu, desde quando e o que já foi tentado"
+                  aria-describedby="chamado-descricao-contador"></textarea>
+        <span class="field-hint"><span>Obrigatório</span><span id="chamado-descricao-contador" data-contador="chamado-descricao">0/254</span></span>
+      </div>
+
+      <fieldset class="field choice-group choice-group-4">
+        <legend>Prioridade</legend>
+        <label class="choice choice-prio choice-prio-baixa">
+          <input type="radio" name="prioridade" value="BAIXA" required>
+          <span class="choice-body"><strong>Baixa</strong></span>
+        </label>
+        <label class="choice choice-prio choice-prio-media">
+          <input type="radio" name="prioridade" value="MEDIA">
+          <span class="choice-body"><strong>Média</strong></span>
+        </label>
+        <label class="choice choice-prio choice-prio-alta">
+          <input type="radio" name="prioridade" value="ALTA">
+          <span class="choice-body"><strong>Alta</strong></span>
+        </label>
+        <label class="choice choice-prio choice-prio-critica">
+          <input type="radio" name="prioridade" value="CRITICA">
+          <span class="choice-body"><strong>Crítica</strong></span>
+        </label>
+      </fieldset>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="chamado-cliente">Cliente</label>
+          <select class="input" id="chamado-cliente" name="clienteId" required aria-describedby="chamado-cliente-hint">
+            <option value="">Carregando…</option>
+          </select>
+          <span class="field-hint" id="chamado-cliente-hint" hidden><span>O cliente não pode ser trocado depois de aberto</span></span>
+        </div>
+        <div class="field">
+          <label for="chamado-categoria">Categoria</label>
+          <select class="input" id="chamado-categoria" name="categoriaId" required>
+            <option value="">Carregando…</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-ghost" type="button" data-fechar>Cancelar</button>
+      <button class="btn btn-primary" type="submit" id="btn-salvar-chamado">Abrir chamado</button>
+    </div>
+  </form>
+</dialog>
+</body>
+</html>

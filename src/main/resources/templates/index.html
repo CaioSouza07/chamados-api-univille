@@ -67,7 +67,7 @@
         <section class="card" aria-labelledby="recentes">
           <div class="card-head">
             <h2 id="recentes">Chamados recentes</h2>
-            <a class="link" href="#">Ver todos</a>
+            <a class="link" th:href="@{/telas/chamados}">Ver todos</a>
           </div>
           <div class="table-wrap">
             <table>
@@ -81,10 +81,10 @@
                 </tr>
               </thead>
               <tbody>
-                <tr th:each="c : ${painel.recentes}">
+                <tr th:each="c : ${painel.recentes}" class="row-link" th:data-href="@{/telas/chamados/{id}(id=${c.id})}">
                   <td class="t-id" th:text="${'#' + c.id}">#1</td>
                   <td>
-                    <div class="t-title" th:text="${c.titulo}">Título</div>
+                    <a class="t-title t-link" th:href="@{/telas/chamados/{id}(id=${c.id})}" th:text="${c.titulo}">Título</a>
                     <div class="t-meta" th:text="${c.cliente.nome + ' · ' + c.categoria.nome}">Cliente · Categoria</div>
                   </td>
                   <td><span th:class="${'prio prio-' + c.prioridade.css}" th:text="${c.prioridade.label}">Média</span></td>

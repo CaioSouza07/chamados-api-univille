@@ -22,6 +22,8 @@
   const chamadosCliente = document.getElementById('chamados-cliente');
   const chamadosLista = document.getElementById('chamados-lista');
   const chamadosTotal = document.getElementById('chamados-total');
+  const chamadosVerTodos = document.getElementById('chamados-ver-todos');
+  const TELA_CHAMADOS = tela.dataset.telaChamados; // /telas/chamados
   const modalChamados = ui.modal(document.getElementById('modal-chamados'));
 
   const excluirNome = document.getElementById('excluir-nome');
@@ -172,8 +174,9 @@
 
     const corpo = document.createElement('div');
     corpo.className = 'ticket-body';
-    const titulo = document.createElement('div');
-    titulo.className = 't-title';
+    const titulo = document.createElement('a');
+    titulo.className = 't-title t-link';
+    titulo.href = TELA_CHAMADOS + '/' + chamado.id;
     titulo.textContent = chamado.titulo;
     const meta = document.createElement('div');
     meta.className = 't-meta';
@@ -200,6 +203,8 @@
   async function abrirChamados(cliente) {
     chamadosCliente.textContent = cliente.nome + ' · ' + cliente.email;
     chamadosTotal.textContent = '';
+    chamadosVerTodos.href = TELA_CHAMADOS + '?clienteId=' + cliente.id;
+    chamadosVerTodos.hidden = true;
     mensagemChamados('Carregando chamados…', { loading: true });
     modalChamados.open();
     const pedido = ++pedidoChamados;
@@ -209,14 +214,14 @@
       const pagina = await api.get(url);
       if (pedido !== pedidoChamados) return;
       const chamados = pagina.content || [];
-      // Spring pode serializar a página em dois formatos: { totalElements } ou { page: { totalElements } }.
-      const total = pagina.page ? pagina.page.totalElements : (pagina.totalElements ?? chamados.length);
+      const total = ui.pageInfo(pagina).totalElements;
 
       if (chamados.length === 0) {
         mensagemChamados('Este cliente ainda não abriu nenhum chamado.');
         return;
       }
       chamadosLista.replaceChildren(...chamados.map(itemChamado));
+      chamadosVerTodos.hidden = false;
       chamadosTotal.textContent = total > chamados.length
         ? 'Mostrando os ' + chamados.length + ' mais recentes de ' + total
         : total + (total === 1 ? ' chamado' : ' chamados');

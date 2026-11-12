@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record ChamadoAtribuirRequest(
 
-        @NotNull(message = "tecnicoId é obrigatório")
+        @NotNull(message = "Técnico é obrigatório")
         Long tecnicoId
 ) {
 }

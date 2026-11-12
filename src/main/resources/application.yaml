@@ -13,6 +13,12 @@ spring:
       ddl-auto: "update"
     show-sql: true
 
+  # Paginação com JSON estável: { content, page: { size, number, totalElements, totalPages } }
+  data:
+    web:
+      pageable:
+        serialization-mode: "via-dto"
+
   h2:
     console:
       enabled: true
